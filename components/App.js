@@ -663,73 +663,176 @@ Write 4 punchy paragraphs: (1) Biggest bottleneck + its rupee impact. (2) Why le
 
 /* ── Lead Capture Screen ── */
 function LeadCapture({ formData, onSubmit }) {
+  const [mode, setMode] = useState("choose"); // "choose" | "manual"
   const [lead, setLead] = useState({ name:"", email:"", phone:"", agency:"" });
   const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState("");
-  const upd = (k,v) => setLead(p=>({...p,[k]:v}));
+  const [errors, setErrors] = useState({});
+  const upd = (k,v) => { setLead(p=>({...p,[k]:v})); setErrors(e=>({...e,[k]:""})); };
 
-  const valid = lead.name.trim() || lead.email.trim();
-
-  const handle = async () => {
-    if (!valid) { setError("Please enter at least your name or email to continue."); return; }
-    setError("");
-    setSubmitting(true);
+  const save = async (ld) => {
     try {
       await fetch("/api/capture", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ lead, formData }),
+        body: JSON.stringify({ lead: ld, formData }),
       });
-    } catch(e) { /* non-blocking — show report regardless */ }
-    setSubmitting(false);
-    onSubmit(lead);
+    } catch(e) {}
+    onSubmit(ld);
   };
 
-  return (
-    <div style={{ minHeight:"100vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"84px 20px 60px" }}>
-      <div style={{ width:"100%",maxWidth:500 }}>
-        <div className="card anim">
-          {/* Header */}
+  const handleGoogle = () => {
+    // Google OAuth — opens popup, on success calls save() with profile data
+    const w = 500, h = 600;
+    const left = window.screenX + (window.outerWidth - w) / 2;
+    const top  = window.screenY + (window.outerHeight - h) / 2;
+    const url  = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${encodeURIComponent(process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID||"")}&redirect_uri=${encodeURIComponent(window.location.origin+"/api/auth/google/callback")}&response_type=code&scope=openid%20email%20profile&prompt=select_account`;
+    const popup = window.open(url, "google-auth", `width=${w},height=${h},left=${left},top=${top}`);
+    const handler = (e) => {
+      if (e.origin !== window.location.origin) return;
+      if (e.data?.type === "GOOGLE_AUTH_SUCCESS") {
+        window.removeEventListener("message", handler);
+        popup?.close();
+        save(e.data.profile);
+      }
+    };
+    window.addEventListener("message", handler);
+  };
+
+  const handleManual = async () => {
+    const errs = {};
+    if (!lead.name.trim())  errs.name  = "Name is required";
+    if (!lead.email.trim()) errs.email = "Email is required";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(lead.email)) errs.email = "Enter a valid email address";
+    if (Object.keys(errs).length) { setErrors(errs); return; }
+    setSubmitting(true);
+    await save(lead);
+    setSubmitting(false);
+  };
+
+  // ── Choose screen ──
+  if (mode === "choose") return (
+    <div style={{ minHeight:"100vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"84px 20px 60px",position:"relative",overflow:"hidden" }}>
+      <div style={{ position:"absolute",top:"5%",left:"50%",transform:"translateX(-50%)",width:600,height:300,background:"radial-gradient(ellipse,rgba(94,96,255,0.08) 0%,transparent 70%)",pointerEvents:"none" }} />
+      <div style={{ width:"100%",maxWidth:460,position:"relative" }}>
+
+        {/* Report preview teaser */}
+        <div className="anim" style={{ background:"linear-gradient(135deg,rgba(94,96,255,0.08),rgba(14,165,233,0.05))",border:"1px solid rgba(94,96,255,0.2)",borderRadius:16,padding:"20px 24px",marginBottom:24,display:"flex",gap:16,alignItems:"center" }}>
+          <div style={{ width:44,height:44,borderRadius:12,background:"linear-gradient(135deg,#5E60FF,#0ea5e9)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0 }}>◈</div>
+          <div>
+            <div style={{ fontSize:15,fontWeight:700,color:"#e8eaf0",marginBottom:3 }}>Your AI Audit Report is ready</div>
+            <div style={{ fontSize:13,color:"#6b6f88" }}>Revenue analysis · AI recommendations · Action plan</div>
+          </div>
+          <div style={{ marginLeft:"auto",flexShrink:0 }}>
+            <div style={{ width:10,height:10,borderRadius:"50%",background:"#10b981",animation:"pulse 2s infinite" }} />
+          </div>
+        </div>
+
+        {/* Main card */}
+        <div className="card anim d1" style={{ padding:"28px 28px 24px" }}>
           <div style={{ textAlign:"center",marginBottom:28 }}>
-            <div style={{ width:52,height:52,borderRadius:14,background:"linear-gradient(135deg,#5E60FF,#0ea5e9)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:24,margin:"0 auto 16px" }}>◈</div>
-            <h2 style={{ fontSize:21,fontWeight:700,letterSpacing:"-0.02em",marginBottom:8 }}>Your report is ready!</h2>
+            <h2 style={{ fontSize:22,fontWeight:700,letterSpacing:"-0.025em",marginBottom:8 }}>Unlock your report</h2>
             <p style={{ fontSize:14,color:"#6b6f88",lineHeight:1.7 }}>
-              Enter your details to unlock your full AI audit report.<br/>
-              <span style={{ color:"#4a4d66" }}>We'll also send you a copy so you can refer back to it.</span>
+              Sign in to access your full audit — we'll also send you a copy to refer back to anytime.
             </p>
           </div>
 
-          {/* Fields */}
-          <div className="field">
-            <label className="fl">Your Name <span style={{ color:"#4a4d66",fontWeight:400 }}>(or enter email below)</span></label>
-            <input type="text" placeholder="e.g. Rahul Sharma" value={lead.name} onChange={e=>upd("name",e.target.value)} />
+          {/* Google button */}
+          <button
+            onClick={handleGoogle}
+            style={{ width:"100%",background:"#fff",color:"#1f2937",border:"1px solid #e5e7eb",borderRadius:10,padding:"12px 20px",fontSize:15,fontWeight:500,cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",justifyContent:"center",gap:12,transition:"all .18s",marginBottom:16 }}
+            onMouseEnter={e=>e.currentTarget.style.background="#f9fafb"}
+            onMouseLeave={e=>e.currentTarget.style.background="#fff"}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24">
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/>
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+            </svg>
+            Continue with Google
+          </button>
+
+          {/* Divider */}
+          <div style={{ display:"flex",alignItems:"center",gap:12,marginBottom:16 }}>
+            <div style={{ flex:1,height:"1px",background:"#1e2030" }} />
+            <span style={{ fontSize:12,color:"#3a3d55",fontWeight:500 }}>or fill in your details</span>
+            <div style={{ flex:1,height:"1px",background:"#1e2030" }} />
           </div>
-          <div className="field">
-            <label className="fl">Email Address <span style={{ color:"#4a4d66",fontWeight:400 }}>(or enter name above)</span></label>
-            <input type="text" placeholder="e.g. rahul@agency.com" value={lead.email} onChange={e=>upd("email",e.target.value)} />
+
+          {/* Manual option */}
+          <button
+            className="btn bo"
+            style={{ width:"100%",fontSize:14,padding:"12px 0" }}
+            onClick={() => setMode("manual")}
+          >
+            Enter details manually →
+          </button>
+
+          <p style={{ fontSize:11,color:"#2e3050",textAlign:"center",marginTop:16,lineHeight:1.6 }}>
+            🔒 No spam. Your data is only used to deliver your report and follow up with you.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+
+  // ── Manual form ──
+  return (
+    <div style={{ minHeight:"100vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"84px 20px 60px" }}>
+      <div style={{ width:"100%",maxWidth:460 }}>
+        <button className="btn bo" style={{ fontSize:13,padding:"7px 14px",marginBottom:20 }} onClick={()=>setMode("choose")}>← Back</button>
+
+        <div className="card anim" style={{ padding:"28px 28px 24px" }}>
+          <div style={{ marginBottom:24 }}>
+            <h2 style={{ fontSize:21,fontWeight:700,letterSpacing:"-0.02em",marginBottom:6 }}>Your details</h2>
+            <p style={{ fontSize:14,color:"#6b6f88" }}>We'll send your audit report to the email you provide.</p>
           </div>
+
+          {/* Name */}
           <div className="field">
-            <label className="fl">Phone Number <span style={{ color:"#4a4d66",fontWeight:400 }}>— optional</span></label>
-            <input type="text" placeholder="e.g. +91 98765 43210" value={lead.phone} onChange={e=>upd("phone",e.target.value)} />
+            <label className="fl">Full Name <span style={{ color:"#ef4444",fontSize:12 }}>*</span></label>
+            <input
+              type="text" placeholder="e.g. Rahul Sharma"
+              value={lead.name} onChange={e=>upd("name",e.target.value)}
+              style={{ borderColor: errors.name ? "#ef4444" : undefined }}
+            />
+            {errors.name && <div style={{ fontSize:12,color:"#ef4444",marginTop:4 }}>{errors.name}</div>}
           </div>
+
+          {/* Email */}
           <div className="field">
-            <label className="fl">Agency Name <span style={{ color:"#4a4d66",fontWeight:400 }}>— optional</span></label>
+            <label className="fl">Work Email <span style={{ color:"#ef4444",fontSize:12 }}>*</span></label>
+            <input
+              type="text" placeholder="e.g. rahul@agency.com"
+              value={lead.email} onChange={e=>upd("email",e.target.value)}
+              style={{ borderColor: errors.email ? "#ef4444" : undefined }}
+            />
+            {errors.email && <div style={{ fontSize:12,color:"#ef4444",marginTop:4 }}>{errors.email}</div>}
+          </div>
+
+          {/* Agency */}
+          <div className="field">
+            <label className="fl">Agency Name <span style={{ color:"#4a4d66",fontWeight:400,fontSize:12 }}>— optional</span></label>
             <input type="text" placeholder="e.g. Global Study Consultants" value={lead.agency} onChange={e=>upd("agency",e.target.value)} />
           </div>
 
-          {error && <div className="warn" style={{ marginBottom:16 }}>{error}</div>}
+          {/* Phone */}
+          <div className="field">
+            <label className="fl">Phone Number <span style={{ color:"#4a4d66",fontWeight:400,fontSize:12 }}>— optional</span></label>
+            <input type="text" placeholder="e.g. +91 98765 43210" value={lead.phone} onChange={e=>upd("phone",e.target.value)} />
+          </div>
 
           <button
             className="btn bp"
-            style={{ width:"100%",fontSize:15,padding:"13px 0",opacity:submitting?0.7:1 }}
-            onClick={handle}
+            style={{ width:"100%",fontSize:15,padding:"13px 0",opacity:submitting?0.7:1,marginTop:4 }}
+            onClick={handleManual}
             disabled={submitting}
           >
             {submitting ? "Saving…" : "View My Audit Report →"}
           </button>
 
-          <p style={{ fontSize:12,color:"#3a3d55",textAlign:"center",marginTop:12 }}>
-            🔒 No spam. Your data is only used to send your report and follow up with you.
+          <p style={{ fontSize:11,color:"#2e3050",textAlign:"center",marginTop:14,lineHeight:1.6 }}>
+            🔒 No spam. Your details are used only to deliver your report.
           </p>
         </div>
       </div>
