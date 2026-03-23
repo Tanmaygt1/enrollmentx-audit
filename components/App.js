@@ -661,22 +661,101 @@ Write 4 punchy paragraphs: (1) Biggest bottleneck + its rupee impact. (2) Why le
   );
 }
 
+/* ── Lead Capture Screen ── */
+function LeadCapture({ formData, onSubmit }) {
+  const [lead, setLead] = useState({ name:"", email:"", phone:"", agency:"" });
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
+  const upd = (k,v) => setLead(p=>({...p,[k]:v}));
+
+  const valid = lead.name.trim() || lead.email.trim();
+
+  const handle = async () => {
+    if (!valid) { setError("Please enter at least your name or email to continue."); return; }
+    setError("");
+    setSubmitting(true);
+    try {
+      await fetch("/api/capture", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ lead, formData }),
+      });
+    } catch(e) { /* non-blocking — show report regardless */ }
+    setSubmitting(false);
+    onSubmit(lead);
+  };
+
+  return (
+    <div style={{ minHeight:"100vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"84px 20px 60px" }}>
+      <div style={{ width:"100%",maxWidth:500 }}>
+        <div className="card anim">
+          {/* Header */}
+          <div style={{ textAlign:"center",marginBottom:28 }}>
+            <div style={{ width:52,height:52,borderRadius:14,background:"linear-gradient(135deg,#5E60FF,#0ea5e9)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:24,margin:"0 auto 16px" }}>◈</div>
+            <h2 style={{ fontSize:21,fontWeight:700,letterSpacing:"-0.02em",marginBottom:8 }}>Your report is ready!</h2>
+            <p style={{ fontSize:14,color:"#6b6f88",lineHeight:1.7 }}>
+              Enter your details to unlock your full AI audit report.<br/>
+              <span style={{ color:"#4a4d66" }}>We'll also send you a copy so you can refer back to it.</span>
+            </p>
+          </div>
+
+          {/* Fields */}
+          <div className="field">
+            <label className="fl">Your Name <span style={{ color:"#4a4d66",fontWeight:400 }}>(or enter email below)</span></label>
+            <input type="text" placeholder="e.g. Rahul Sharma" value={lead.name} onChange={e=>upd("name",e.target.value)} />
+          </div>
+          <div className="field">
+            <label className="fl">Email Address <span style={{ color:"#4a4d66",fontWeight:400 }}>(or enter name above)</span></label>
+            <input type="text" placeholder="e.g. rahul@agency.com" value={lead.email} onChange={e=>upd("email",e.target.value)} />
+          </div>
+          <div className="field">
+            <label className="fl">Phone Number <span style={{ color:"#4a4d66",fontWeight:400 }}>— optional</span></label>
+            <input type="text" placeholder="e.g. +91 98765 43210" value={lead.phone} onChange={e=>upd("phone",e.target.value)} />
+          </div>
+          <div className="field">
+            <label className="fl">Agency Name <span style={{ color:"#4a4d66",fontWeight:400 }}>— optional</span></label>
+            <input type="text" placeholder="e.g. Global Study Consultants" value={lead.agency} onChange={e=>upd("agency",e.target.value)} />
+          </div>
+
+          {error && <div className="warn" style={{ marginBottom:16 }}>{error}</div>}
+
+          <button
+            className="btn bp"
+            style={{ width:"100%",fontSize:15,padding:"13px 0",opacity:submitting?0.7:1 }}
+            onClick={handle}
+            disabled={submitting}
+          >
+            {submitting ? "Saving…" : "View My Audit Report →"}
+          </button>
+
+          <p style={{ fontSize:12,color:"#3a3d55",textAlign:"center",marginTop:12 }}>
+            🔒 No spam. Your data is only used to send your report and follow up with you.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ── Root ── */
 export default function App() {
   const [screen,setScreen] = useState("landing");
   const [fd,setFd] = useState(null);
+  const [lead,setLead] = useState(null);
 
-  const submit = data => { setFd(data); setScreen("analyzing"); setTimeout(()=>setScreen("report"),5800); };
-  const restart = () => { setFd(null); setScreen("landing"); };
+  const submitForm = data => { setFd(data); setScreen("capture"); };
+  const submitLead = ld => { setLead(ld); setScreen("analyzing"); setTimeout(()=>setScreen("report"),5800); };
+  const restart = () => { setFd(null); setLead(null); setScreen("landing"); };
 
   return (
     <>
       <style>{G}</style>
       <Nav/>
       {screen==="landing"   && <Landing onStart={()=>setScreen("form")}/>}
-      {screen==="form"      && <AuditForm onSubmit={submit}/>}
+      {screen==="form"      && <AuditForm onSubmit={submitForm}/>}
+      {screen==="capture"   && <LeadCapture formData={fd} onSubmit={submitLead}/>}
       {screen==="analyzing" && <Analyzing/>}
-      {screen==="report"    && <Report fd={fd} onRestart={restart}/>}
+      {screen==="report"    && <Report fd={fd} lead={lead} onRestart={restart}/>}
     </>
   );
 }
