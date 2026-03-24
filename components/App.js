@@ -685,7 +685,7 @@ function LeadCapture({ formData, onSubmit }) {
     const w = 500, h = 600;
     const left = window.screenX + (window.outerWidth - w) / 2;
     const top  = window.screenY + (window.outerHeight - h) / 2;
-    const url  = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${encodeURIComponent(process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID||"")}&redirect_uri=${encodeURIComponent(window.location.origin+"/api/auth/google/callback")}&response_type=code&scope=openid%20email%20profile&prompt=select_account`;
+    const url  = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${encodeURIComponent(process.env.1097939175566-0gjgoj9rl5625tn2vdeghuldl9aiepod.apps.googleusercontent.com||"")}&redirect_uri=${encodeURIComponent(window.location.origin+"/api/auth/google/callback")}&response_type=code&scope=openid%20email%20profile&prompt=select_account`;
     const popup = window.open(url, "google-auth", `width=${w},height=${h},left=${left},top=${top}`);
     const handler = (e) => {
       if (e.origin !== window.location.origin) return;
