@@ -1,5 +1,11 @@
 "use client";
 import { useState, useEffect } from "react";
+import { createClient } from "@supabase/supabase-js";
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+);
 
 const G = `
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
@@ -59,11 +65,27 @@ function Logo({ size = 18 }) {
   );
 }
 
-function Nav() {
+function Nav({ user, onSignOut }) {
   return (
     <nav className="nav">
       <Logo />
-      <div style={{ marginLeft:"auto",fontSize:13,color:"#3a3d55",fontWeight:500 }}>AI Audit System</div>
+      <div style={{ marginLeft:"auto", display:"flex", alignItems:"center", gap:12 }}>
+        {user && (
+          <>
+            <span style={{ fontSize:13, color:"#6b6f88" }}>{user.email}</span>
+            <button
+              className="btn bo"
+              style={{ fontSize:13, padding:"6px 14px" }}
+              onClick={onSignOut}
+            >
+              Sign out
+            </button>
+          </>
+        )}
+        {!user && (
+          <div style={{ fontSize:13,color:"#3a3d55",fontWeight:500 }}>AI Audit System</div>
+        )}
+      </div>
     </nav>
   );
 }
@@ -197,14 +219,14 @@ function Step2({ d, u }) {
       <p className="fh">Include all staff who handle student enquiries, even part-time advisors.</p>
     </div>
     <div className="field">
-      <label className="fl">On average, how many minutes per week does a counselor spend on each active lead? (calls, emails, document tasks, follow-ups)</label>
+      <label className="fl">On average, how many minutes per week does a counselor spend on each active lead?</label>
       <input type="number" min="0" placeholder="e.g. 45" value={d.timePerLead||""} onChange={e=>u("timePerLead",e.target.value)} />
       <p className="fh">Include everything: calls, re-sending documents, updating records, answering the same questions.</p>
     </div>
     <div className="field">
-      <label className="fl">What percentage of your team's daily work is repetitive and manual? (doing the same tasks over and over)</label>
+      <label className="fl">What percentage of your team's daily work is repetitive and manual?</label>
       <input type="number" min="0" max="100" placeholder="e.g. 60" value={d.manualWorkPct||""} onChange={e=>u("manualWorkPct",e.target.value)} />
-      <p className="fh">Examples: re-sending the same brochures, manually updating spreadsheets, answering the same FAQs repeatedly, copy-pasting data between tools.</p>
+      <p className="fh">Examples: re-sending the same brochures, manually updating spreadsheets, answering the same FAQs repeatedly.</p>
       {Number(d.manualWorkPct)>50 && <div className="warn">⚠ This is significantly above average. AI automation can typically eliminate 60–70% of this workload.</div>}
     </div>
   </>;
@@ -218,15 +240,15 @@ function Step3({ d, u }) {
       <p className="fh">Include Google Ads, Meta / Instagram Ads, YouTube promotions, or any paid campaigns.</p>
     </div>
     <div className="field">
-      <label className="fl">What is your approximate cost per lead? (₹) — How much do you pay to get one enquiry?</label>
+      <label className="fl">What is your approximate cost per lead? (₹)</label>
       <input type="number" min="0" placeholder="e.g. 333" value={d.costPerLead||""} onChange={e=>u("costPerLead",e.target.value)} />
       <p className="fh">Formula: Cost per Lead = Ad Spend ÷ Monthly Leads. Leave blank and we'll calculate it for you.</p>
     </div>
     <div className="field">
       <label className="fl">How would you describe the overall quality of leads your agency receives?</label>
       <div className="choice-grid">
-        <CB val="low"    label="Low"    hint="— mostly unserious enquiries"     field="leadQuality" data={d} upd={u} />
-        <CB val="medium" label="Medium" hint="— mix of serious and casual"      field="leadQuality" data={d} upd={u} />
+        <CB val="low"    label="Low"    hint="— mostly unserious enquiries"      field="leadQuality" data={d} upd={u} />
+        <CB val="medium" label="Medium" hint="— mix of serious and casual"       field="leadQuality" data={d} upd={u} />
         <CB val="high"   label="High"   hint="— mostly ready-to-enroll students" field="leadQuality" data={d} upd={u} />
       </div>
     </div>
@@ -241,23 +263,23 @@ function Step3({ d, u }) {
 function Step4({ d, u }) {
   return <>
     <div className="field">
-      <label className="fl">How does your agency currently handle student documents? (transcripts, applications, visa forms)</label>
+      <label className="fl">How does your agency currently handle student documents?</label>
       <div className="choice-grid">
-        <CB val="manual"  label="Fully manual"   hint="— paper files, email attachments, physical folders" field="docHandling" data={d} upd={u} />
-        <CB val="semi"    label="Semi-digital"   hint="— mix of digital files and paper"                   field="docHandling" data={d} upd={u} />
-        <CB val="digital" label="Fully digital"  hint="— cloud storage, digital workflows"                 field="docHandling" data={d} upd={u} />
+        <CB val="manual"  label="Fully manual"  hint="— paper files, email attachments" field="docHandling" data={d} upd={u} />
+        <CB val="semi"    label="Semi-digital"  hint="— mix of digital files and paper"  field="docHandling" data={d} upd={u} />
+        <CB val="digital" label="Fully digital" hint="— cloud storage, digital workflows" field="docHandling" data={d} upd={u} />
       </div>
-      {d.docHandling==="manual" && <div className="warn">⚠ Manual document handling adds 3–4 hours per student on average. AI can reduce this to under 45 minutes.</div>}
-      {d.docHandling==="digital" && <div className="note">✓ Great — digital document handling gives you a strong operational base to build AI workflows on top of.</div>}
+      {d.docHandling==="manual" && <div className="warn">⚠ Manual document handling adds 3–4 hours per student on average.</div>}
+      {d.docHandling==="digital" && <div className="note">✓ Great — digital document handling gives you a strong operational base.</div>}
     </div>
     <div className="field" style={{ marginTop:4 }}>
-      <label className="fl">Does your agency use a CRM (Customer Relationship Management) system to track leads and follow-ups?</label>
+      <label className="fl">Does your agency use a CRM to track leads and follow-ups?</label>
       <div className="choice-grid">
-        <CB val="yes"    label="Yes, actively"   hint="— we track every lead in the CRM"                  field="usesCRM" data={d} upd={u} />
-        <CB val="partly" label="Partially"       hint="— we have one but don't use it consistently"        field="usesCRM" data={d} upd={u} />
-        <CB val="no"     label="No CRM"          hint="— we use spreadsheets, WhatsApp, or nothing"        field="usesCRM" data={d} upd={u} />
+        <CB val="yes"    label="Yes, actively" hint="— we track every lead in the CRM"           field="usesCRM" data={d} upd={u} />
+        <CB val="partly" label="Partially"     hint="— we have one but don't use it consistently" field="usesCRM" data={d} upd={u} />
+        <CB val="no"     label="No CRM"        hint="— we use spreadsheets, WhatsApp, or nothing" field="usesCRM" data={d} upd={u} />
       </div>
-      {d.usesCRM==="no" && <div className="warn">⚠ Agencies without a CRM lose an estimated 35% more leads due to poor follow-up tracking and visibility.</div>}
+      {d.usesCRM==="no" && <div className="warn">⚠ Agencies without a CRM lose an estimated 35% more leads due to poor follow-up tracking.</div>}
     </div>
   </>;
 }
@@ -280,8 +302,6 @@ function AuditForm({ onSubmit }) {
   return (
     <div style={{ minHeight:"100vh",display:"flex",flexDirection:"column",alignItems:"center",padding:"84px 20px 60px" }}>
       <div style={{ width:"100%",maxWidth:580 }}>
-
-        {/* Progress */}
         <div style={{ marginBottom:32 }}>
           <div style={{ display:"flex",alignItems:"center",marginBottom:14 }}>
             {STEPS.map((s,i)=>(
@@ -298,7 +318,6 @@ function AuditForm({ onSubmit }) {
           </div>
         </div>
 
-        {/* Card */}
         <div className="card anim" key={step}>
           <div style={{ marginBottom:24 }}>
             <h2 style={{ fontSize:20,fontWeight:700,letterSpacing:"-0.02em",marginBottom:4 }}>{STEPS[step].title}</h2>
@@ -508,26 +527,26 @@ Write 4 punchy paragraphs: (1) Biggest bottleneck + its rupee impact. (2) Why le
   const opps = [
     {
       title:"AI Chatbot for Instant Lead Response",
-      impact:`Bring your ${m.rt}-minute response time to under 2 minutes — 24/7, even on weekends. The chatbot qualifies each lead's destination, budget, and course immediately, so your counselors only spend time on warm, pre-qualified prospects. Estimated recovery: ${Math.round(m.lost*0.35)} leads/month.`,
+      impact:`Bring your ${m.rt}-minute response time to under 2 minutes — 24/7, even on weekends. Estimated recovery: ${Math.round(m.lost*0.35)} leads/month.`,
       priority:m.rt>15?"CRITICAL":"HIGH",
     },
     {
       title:"Automated WhatsApp Follow-up Sequences",
-      impact:`Replace ${fd.followUpMethod==="none"?"your absent follow-up process with":fd.followUpMethod==="manual"?"your manual calling effort with":`your current ${fd.followUpMethod} follow-up with`} personalised, multi-step WhatsApp sequences triggered at the right time. Expected result: 4–5× more follow-up touchpoints per lead with zero extra staff hours. Directly addresses the ${fd.dropOffStage} drop-off problem.`,
+      impact:`Replace your current follow-up with personalised, multi-step WhatsApp sequences. Directly addresses the ${fd.dropOffStage} drop-off problem.`,
       priority:fd.followUpMethod==="none"||fd.followUpMethod==="manual"?"CRITICAL":"HIGH",
     },
     {
       title:fd.usesCRM==="no"?"CRM Setup + Lead Pipeline Tracking":"CRM Automation & Smart Workflows",
       impact:fd.usesCRM==="no"
-        ?`No CRM means no visibility into where leads go silent. A properly configured CRM would save your ${m.counsel} counselor${m.counsel>1?"s":""} ~${Math.round(m.wWaste*0.35)} hours/week in manual tracking, and ensure no lead falls through the cracks.`
-        :`Automate your existing CRM: auto-assign leads on enquiry, send reminder tasks at each follow-up stage, and generate weekly conversion dashboards — cutting manual data entry by ~40%.`,
+        ?`No CRM means no visibility into where leads go silent. A properly configured CRM would save your ${m.counsel} counselor${m.counsel>1?"s":""} ~${Math.round(m.wWaste*0.35)} hours/week in manual tracking.`
+        :`Automate your existing CRM: auto-assign leads, send reminders at each follow-up stage, and generate weekly dashboards — cutting manual data entry by ~40%.`,
       priority:fd.usesCRM==="no"?"HIGH":"MEDIUM",
     },
     {
       title:"Document Processing Automation",
       impact:fd.docHandling==="manual"
-        ?`Manual document collection adds 3–4 hours per student. An AI document portal with smart checklists and auto-verification reduces this to under 45 minutes, freeing roughly ${Math.round(m.wWaste*0.3)} counselor hours per month for higher-value work.`
-        :`Upgrade your semi-digital process: smart document checklists, auto-completeness checks, and direct submission links — reducing errors by 70% and student drop-off at the document stage.`,
+        ?`Manual document collection adds 3–4 hours per student. An AI document portal reduces this to under 45 minutes, freeing ~${Math.round(m.wWaste*0.3)} counselor hours per month.`
+        :`Upgrade your semi-digital process with smart checklists and auto-verification — reducing errors by 70%.`,
       priority:fd.docHandling==="manual"?"HIGH":"MEDIUM",
     },
   ];
@@ -536,8 +555,6 @@ Write 4 punchy paragraphs: (1) Biggest bottleneck + its rupee impact. (2) Why le
 
   return (
     <div style={{ maxWidth:760,margin:"0 auto",padding:"84px 20px 80px" }}>
-
-      {/* Header */}
       <div className="anim" style={{ marginBottom:32 }}>
         <div className="slabel">EnrollmentX AI Audit Report · {date}</div>
         <h1 style={{ fontSize:28,fontWeight:700,letterSpacing:"-0.03em",marginBottom:8 }}>Your Agency Audit Is Ready</h1>
@@ -546,7 +563,6 @@ Write 4 punchy paragraphs: (1) Biggest bottleneck + its rupee impact. (2) Why le
         </p>
       </div>
 
-      {/* ① Score */}
       <div className="card anim d1" style={{ display:"flex",gap:24,alignItems:"center",marginBottom:14,flexWrap:"wrap" }}>
         <Gauge score={m.score} />
         <div style={{ flex:1,minWidth:220 }}>
@@ -555,7 +571,7 @@ Write 4 punchy paragraphs: (1) Biggest bottleneck + its rupee impact. (2) Why le
             {m.score<42?"Critical inefficiencies — urgent action required":m.score<68?"Several revenue leaks found — moderate risk":"Good foundation, but revenue gaps remain"}
           </h2>
           <p style={{ fontSize:14,color:"#6b6f88",lineHeight:1.75 }}>
-            Top-performing study abroad agencies score <strong style={{ color:"#e8eaf0" }}>75 or above</strong>.
+            Top-performing agencies score <strong style={{ color:"#e8eaf0" }}>75 or above</strong>.
             Your score of <strong style={{ color:m.score<42?"#ef4444":m.score<68?"#f59e0b":"#10b981" }}>{m.score}/100</strong> indicates
             {m.score<42?" multiple compounding problems actively reducing your revenue every day."
               :m.score<68?" clear gaps in conversion, follow-up, and operations limiting your growth."
@@ -564,18 +580,16 @@ Write 4 punchy paragraphs: (1) Biggest bottleneck + its rupee impact. (2) Why le
         </div>
       </div>
 
-      {/* ② Financial Impact */}
       <div style={{ marginBottom:14 }}>
         <div className="slabel">What You're Losing — Financial Impact</div>
         <div style={{ display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(155px,1fr))",gap:10 }}>
-          <Stat label="Monthly Revenue Loss"    value={inr(m.mLoss)}        sub={`${m.lost} unconverted leads × ${inr(m.rps)}`}                                                     vc="#ef4444" />
-          <Stat label="Annual Revenue at Risk"  value={inr(m.aLoss)}        sub="Projected over 12 months if nothing changes"                                                         vc="#ef4444" />
-          <Stat label="Response Time Penalty"   value={m.penalty?inr(m.rtPenMoney):"None"} sub={m.penalty?`${m.rt}min response → 30% conversion loss`:`${m.rt}min — within safe range`}  vc={m.penalty?"#f59e0b":"#10b981"} />
-          <Stat label="Ad Budget Wasted"        value={inr(m.adWasted)}     sub="Spent on leads that don't convert each month"                                                        vc="#f59e0b" />
+          <Stat label="Monthly Revenue Loss"   value={inr(m.mLoss)}        sub={`${m.lost} unconverted leads × ${inr(m.rps)}`}                                                    vc="#ef4444" />
+          <Stat label="Annual Revenue at Risk" value={inr(m.aLoss)}        sub="Projected over 12 months if nothing changes"                                                        vc="#ef4444" />
+          <Stat label="Response Time Penalty"  value={m.penalty?inr(m.rtPenMoney):"None"} sub={m.penalty?`${m.rt}min response → 30% conversion loss`:`${m.rt}min — within safe range`} vc={m.penalty?"#f59e0b":"#10b981"} />
+          <Stat label="Ad Budget Wasted"       value={inr(m.adWasted)}     sub="Spent on leads that don't convert each month"                                                       vc="#f59e0b" />
         </div>
       </div>
 
-      {/* ③ Time & Operations */}
       <div className="card anim d2" style={{ marginBottom:14 }}>
         <div className="slabel">Time & Operational Efficiency</div>
         <div style={{ display:"grid",gridTemplateColumns:"1fr 1fr",gap:20,marginBottom:24 }}>
@@ -590,15 +604,14 @@ Write 4 punchy paragraphs: (1) Biggest bottleneck + its rupee impact. (2) Why le
             <div style={{ fontSize:12,color:"#3a3d55",marginTop:3 }}>At ₹200/hour labour cost</div>
           </div>
         </div>
-        <Bar label="Conversion rate vs. 15% industry benchmark" val={`${m.effConv}% / 15%`} pct={(m.effConv/15)*100} color={m.effConv<8?"#ef4444":"#f59e0b"}
+        <Bar label="Conversion rate vs. 15% benchmark" val={`${m.effConv}% / 15%`} pct={(m.effConv/15)*100} color={m.effConv<8?"#ef4444":"#f59e0b"}
           note={`You are ${(15-m.effConv).toFixed(1)}% below benchmark — that gap equals ${m.lost} missed enrollments per month`} />
         <Bar label="Proportion of work that is manual / repetitive" val={`${m.manual}%`} pct={m.manual} color={m.manual>60?"#ef4444":m.manual>30?"#f59e0b":"#10b981"}
           note={m.manual>50?"High manual load is consuming time that should be spent on lead conversion.":"Some manual work exists — targeted automation can clear this."} />
-        <Bar label="Lead response speed  (target: under 10 minutes)" val={`${m.rt} min`} pct={Math.min(100,(10/Math.max(m.rt,1))*100)} color={m.rt<=10?"#10b981":"#ef4444"}
-          note={m.rt>10?`${m.rt-10} minutes above the safe threshold. This is actively reducing your conversion from ${m.conv}% to ${m.effConv}%.`:"Your response time is optimal. This is a competitive advantage."} />
+        <Bar label="Lead response speed (target: under 10 minutes)" val={`${m.rt} min`} pct={Math.min(100,(10/Math.max(m.rt,1))*100)} color={m.rt<=10?"#10b981":"#ef4444"}
+          note={m.rt>10?`${m.rt-10} minutes above the safe threshold. Actively reducing your conversion from ${m.conv}% to ${m.effConv}%.`:"Your response time is optimal."} />
       </div>
 
-      {/* ④ AI Diagnosis */}
       <div className="card-blue anim d3" style={{ marginBottom:14 }}>
         <div style={{ display:"flex",gap:12,alignItems:"center",marginBottom:14 }}>
           <div style={{ width:34,height:34,borderRadius:9,background:"rgba(94,96,255,0.14)",border:"1px solid rgba(94,96,255,0.28)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:17,flexShrink:0 }}>◈</div>
@@ -617,7 +630,6 @@ Write 4 punchy paragraphs: (1) Biggest bottleneck + its rupee impact. (2) Why le
         )}
       </div>
 
-      {/* ⑤ AI Opportunities */}
       <div style={{ marginBottom:14 }}>
         <div className="slabel">AI Automation Opportunities — Ranked by ROI Impact</div>
         <div style={{ display:"flex",flexDirection:"column",gap:10 }}>
@@ -625,7 +637,6 @@ Write 4 punchy paragraphs: (1) Biggest bottleneck + its rupee impact. (2) Why le
         </div>
       </div>
 
-      {/* ⑥ Growth Potential */}
       <div className="card-blue anim" style={{ marginBottom:24 }}>
         <div className="slabel">Your Growth Potential</div>
         <div style={{ display:"flex",alignItems:"baseline",gap:12,flexWrap:"wrap",marginBottom:14 }}>
@@ -640,7 +651,6 @@ Write 4 punchy paragraphs: (1) Biggest bottleneck + its rupee impact. (2) Why le
         </p>
       </div>
 
-      {/* ⑦ CTA */}
       <div style={{ background:"#0f1017",border:"1px solid #1e2030",borderRadius:18,padding:"48px 32px",textAlign:"center" }}>
         <div style={{ fontSize:11,fontWeight:600,letterSpacing:"0.1em",textTransform:"uppercase",color:"#5E60FF",marginBottom:16 }}>Ready to fix this?</div>
         <h2 style={{ fontSize:26,fontWeight:700,letterSpacing:"-0.025em",marginBottom:12 }}>
@@ -661,9 +671,9 @@ Write 4 punchy paragraphs: (1) Biggest bottleneck + its rupee impact. (2) Why le
   );
 }
 
-/* ── Lead Capture Screen ── */
+/* ── Lead Capture Screen (now uses Supabase Auth) ── */
 function LeadCapture({ formData, onSubmit }) {
-  const [mode, setMode] = useState("choose"); // "choose" | "manual"
+  const [mode, setMode] = useState("choose");
   const [lead, setLead] = useState({ name:"", email:"", phone:"", agency:"" });
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState({});
@@ -680,22 +690,18 @@ function LeadCapture({ formData, onSubmit }) {
     onSubmit(ld);
   };
 
-  const handleGoogle = () => {
-    // Google OAuth — opens popup, on success calls save() with profile data
-    const w = 500, h = 600;
-    const left = window.screenX + (window.outerWidth - w) / 2;
-    const top  = window.screenY + (window.outerHeight - h) / 2;
-    const url  = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${encodeURIComponent(process.env.1097939175566-0gjgoj9rl5625tn2vdeghuldl9aiepod.apps.googleusercontent.com||"")}&redirect_uri=${encodeURIComponent(window.location.origin+"/api/auth/google/callback")}&response_type=code&scope=openid%20email%20profile&prompt=select_account`;
-    const popup = window.open(url, "google-auth", `width=${w},height=${h},left=${left},top=${top}`);
-    const handler = (e) => {
-      if (e.origin !== window.location.origin) return;
-      if (e.data?.type === "GOOGLE_AUTH_SUCCESS") {
-        window.removeEventListener("message", handler);
-        popup?.close();
-        save(e.data.profile);
-      }
-    };
-    window.addEventListener("message", handler);
+  // ✅ Supabase Google Sign-In — replaces the broken OAuth popup
+  const handleGoogle = async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: window.location.origin + "?audit=true",
+      },
+    });
+    if (error) {
+      console.error("Google sign-in error:", error.message);
+      alert("Google sign-in failed. Please try entering your details manually.");
+    }
   };
 
   const handleManual = async () => {
@@ -709,13 +715,11 @@ function LeadCapture({ formData, onSubmit }) {
     setSubmitting(false);
   };
 
-  // ── Choose screen ──
   if (mode === "choose") return (
     <div style={{ minHeight:"100vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"84px 20px 60px",position:"relative",overflow:"hidden" }}>
       <div style={{ position:"absolute",top:"5%",left:"50%",transform:"translateX(-50%)",width:600,height:300,background:"radial-gradient(ellipse,rgba(94,96,255,0.08) 0%,transparent 70%)",pointerEvents:"none" }} />
       <div style={{ width:"100%",maxWidth:460,position:"relative" }}>
 
-        {/* Report preview teaser */}
         <div className="anim" style={{ background:"linear-gradient(135deg,rgba(94,96,255,0.08),rgba(14,165,233,0.05))",border:"1px solid rgba(94,96,255,0.2)",borderRadius:16,padding:"20px 24px",marginBottom:24,display:"flex",gap:16,alignItems:"center" }}>
           <div style={{ width:44,height:44,borderRadius:12,background:"linear-gradient(135deg,#5E60FF,#0ea5e9)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0 }}>◈</div>
           <div>
@@ -727,7 +731,6 @@ function LeadCapture({ formData, onSubmit }) {
           </div>
         </div>
 
-        {/* Main card */}
         <div className="card anim d1" style={{ padding:"28px 28px 24px" }}>
           <div style={{ textAlign:"center",marginBottom:28 }}>
             <h2 style={{ fontSize:22,fontWeight:700,letterSpacing:"-0.025em",marginBottom:8 }}>Unlock your report</h2>
@@ -736,7 +739,7 @@ function LeadCapture({ formData, onSubmit }) {
             </p>
           </div>
 
-          {/* Google button */}
+          {/* ✅ Clean Google button using Supabase */}
           <button
             onClick={handleGoogle}
             style={{ width:"100%",background:"#fff",color:"#1f2937",border:"1px solid #e5e7eb",borderRadius:10,padding:"12px 20px",fontSize:15,fontWeight:500,cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",justifyContent:"center",gap:12,transition:"all .18s",marginBottom:16 }}
@@ -747,24 +750,18 @@ function LeadCapture({ formData, onSubmit }) {
               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
               <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
               <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/>
-              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.47 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
             </svg>
             Continue with Google
           </button>
 
-          {/* Divider */}
           <div style={{ display:"flex",alignItems:"center",gap:12,marginBottom:16 }}>
             <div style={{ flex:1,height:"1px",background:"#1e2030" }} />
             <span style={{ fontSize:12,color:"#3a3d55",fontWeight:500 }}>or fill in your details</span>
             <div style={{ flex:1,height:"1px",background:"#1e2030" }} />
           </div>
 
-          {/* Manual option */}
-          <button
-            className="btn bo"
-            style={{ width:"100%",fontSize:14,padding:"12px 0" }}
-            onClick={() => setMode("manual")}
-          >
+          <button className="btn bo" style={{ width:"100%",fontSize:14,padding:"12px 0" }} onClick={() => setMode("manual")}>
             Enter details manually →
           </button>
 
@@ -776,7 +773,6 @@ function LeadCapture({ formData, onSubmit }) {
     </div>
   );
 
-  // ── Manual form ──
   return (
     <div style={{ minHeight:"100vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"84px 20px 60px" }}>
       <div style={{ width:"100%",maxWidth:460 }}>
@@ -788,46 +784,29 @@ function LeadCapture({ formData, onSubmit }) {
             <p style={{ fontSize:14,color:"#6b6f88" }}>We'll send your audit report to the email you provide.</p>
           </div>
 
-          {/* Name */}
           <div className="field">
             <label className="fl">Full Name <span style={{ color:"#ef4444",fontSize:12 }}>*</span></label>
-            <input
-              type="text" placeholder="e.g. Rahul Sharma"
-              value={lead.name} onChange={e=>upd("name",e.target.value)}
-              style={{ borderColor: errors.name ? "#ef4444" : undefined }}
-            />
+            <input type="text" placeholder="e.g. Rahul Sharma" value={lead.name} onChange={e=>upd("name",e.target.value)} style={{ borderColor: errors.name ? "#ef4444" : undefined }} />
             {errors.name && <div style={{ fontSize:12,color:"#ef4444",marginTop:4 }}>{errors.name}</div>}
           </div>
 
-          {/* Email */}
           <div className="field">
             <label className="fl">Work Email <span style={{ color:"#ef4444",fontSize:12 }}>*</span></label>
-            <input
-              type="text" placeholder="e.g. rahul@agency.com"
-              value={lead.email} onChange={e=>upd("email",e.target.value)}
-              style={{ borderColor: errors.email ? "#ef4444" : undefined }}
-            />
+            <input type="text" placeholder="e.g. rahul@agency.com" value={lead.email} onChange={e=>upd("email",e.target.value)} style={{ borderColor: errors.email ? "#ef4444" : undefined }} />
             {errors.email && <div style={{ fontSize:12,color:"#ef4444",marginTop:4 }}>{errors.email}</div>}
           </div>
 
-          {/* Agency */}
           <div className="field">
             <label className="fl">Agency Name <span style={{ color:"#4a4d66",fontWeight:400,fontSize:12 }}>— optional</span></label>
             <input type="text" placeholder="e.g. Global Study Consultants" value={lead.agency} onChange={e=>upd("agency",e.target.value)} />
           </div>
 
-          {/* Phone */}
           <div className="field">
             <label className="fl">Phone Number <span style={{ color:"#4a4d66",fontWeight:400,fontSize:12 }}>— optional</span></label>
             <input type="text" placeholder="e.g. +91 98765 43210" value={lead.phone} onChange={e=>upd("phone",e.target.value)} />
           </div>
 
-          <button
-            className="btn bp"
-            style={{ width:"100%",fontSize:15,padding:"13px 0",opacity:submitting?0.7:1,marginTop:4 }}
-            onClick={handleManual}
-            disabled={submitting}
-          >
+          <button className="btn bp" style={{ width:"100%",fontSize:15,padding:"13px 0",opacity:submitting?0.7:1,marginTop:4 }} onClick={handleManual} disabled={submitting}>
             {submitting ? "Saving…" : "View My Audit Report →"}
           </button>
 
@@ -842,18 +821,46 @@ function LeadCapture({ formData, onSubmit }) {
 
 /* ── Root ── */
 export default function App() {
-  const [screen,setScreen] = useState("landing");
-  const [fd,setFd] = useState(null);
-  const [lead,setLead] = useState(null);
+  const [screen, setScreen] = useState("landing");
+  const [fd, setFd] = useState(null);
+  const [lead, setLead] = useState(null);
+  const [user, setUser] = useState(null);
+
+  // ✅ Listen for Supabase auth changes (handles redirect back after Google login)
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        setUser(session.user);
+        // If they came back from Google redirect mid-audit, send them to report
+        const params = new URLSearchParams(window.location.search);
+        if (params.get("audit") === "true" && fd) {
+          const profile = {
+            name: session.user.user_metadata?.full_name || "",
+            email: session.user.email || "",
+          };
+          setLead(profile);
+          setScreen("analyzing");
+          setTimeout(() => setScreen("report"), 5800);
+        }
+      }
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   const submitForm = data => { setFd(data); setScreen("capture"); };
-  const submitLead = ld => { setLead(ld); setScreen("analyzing"); setTimeout(()=>setScreen("report"),5800); };
-  const restart = () => { setFd(null); setLead(null); setScreen("landing"); };
+  const submitLead = ld  => { setLead(ld); setScreen("analyzing"); setTimeout(() => setScreen("report"), 5800); };
+  const restart    = ()  => { setFd(null); setLead(null); setScreen("landing"); };
+  const signOut    = async () => { await supabase.auth.signOut(); setUser(null); };
 
   return (
     <>
       <style>{G}</style>
-      <Nav/>
+      <Nav user={user} onSignOut={signOut} />
       {screen==="landing"   && <Landing onStart={()=>setScreen("form")}/>}
       {screen==="form"      && <AuditForm onSubmit={submitForm}/>}
       {screen==="capture"   && <LeadCapture formData={fd} onSubmit={submitLead}/>}
