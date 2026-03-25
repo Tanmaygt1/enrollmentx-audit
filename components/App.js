@@ -73,13 +73,7 @@ function Nav({ user, onSignOut }) {
         {user && (
           <>
             <span style={{ fontSize:13, color:"#6b6f88" }}>{user.email}</span>
-            <button
-              className="btn bo"
-              style={{ fontSize:13, padding:"6px 14px" }}
-              onClick={onSignOut}
-            >
-              Sign out
-            </button>
+            <button className="btn bo" style={{ fontSize:13, padding:"6px 14px" }} onClick={onSignOut}>Sign out</button>
           </>
         )}
         {!user && (
@@ -90,7 +84,6 @@ function Nav({ user, onSignOut }) {
   );
 }
 
-/* ── Landing ── */
 function Landing({ onStart }) {
   return (
     <div style={{ minHeight:"100vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"100px 24px 60px",position:"relative",overflow:"hidden" }}>
@@ -100,23 +93,19 @@ function Landing({ onStart }) {
           <span style={{ width:7,height:7,borderRadius:"50%",background:"#5E60FF",animation:"pulse 2s infinite",display:"inline-block" }} />
           <span style={{ fontSize:13,color:"#8b8eff",fontWeight:500 }}>Free · No credit card · 2 minutes</span>
         </div>
-
         <h1 className="anim d1" style={{ fontSize:"clamp(32px,5.5vw,56px)",fontWeight:700,lineHeight:1.12,letterSpacing:"-0.03em",marginBottom:20 }}>
           Find out exactly how much revenue<br />
           <span style={{ background:"linear-gradient(90deg,#5E60FF,#0ea5e9)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent" }}>
             your agency is losing today
           </span>
         </h1>
-
         <p className="anim d2" style={{ fontSize:17,color:"#6b6f88",lineHeight:1.8,maxWidth:500,margin:"0 auto 38px" }}>
           Answer 15 quick questions about your study abroad business. EnrollmentX AI analyses your data and delivers a personalised audit — with exact ₹ figures and a step-by-step AI fix plan.
         </p>
-
         <div className="anim d3">
           <button className="btn bcta" onClick={onStart}>Start My Free Audit →</button>
           <p style={{ fontSize:13,color:"#3a3d55",marginTop:12 }}>Takes about 2–3 minutes · 100% confidential</p>
         </div>
-
         <div className="anim d4" style={{ display:"flex",gap:0,justifyContent:"center",marginTop:56,borderTop:"1px solid #1e2030",paddingTop:36,flexWrap:"wrap" }}>
           {[["₹2.4Cr+","Average annual revenue leak found per agency"],["87%","Of agencies miss key AI automation opportunities"],["2–3 min","To get your full personalised report"]].map(([n,d]) => (
             <div key={n} style={{ flex:1,minWidth:140,textAlign:"center",padding:"0 20px" }}>
@@ -130,7 +119,6 @@ function Landing({ onStart }) {
   );
 }
 
-/* ── Form Steps ── */
 const STEPS = [
   { title:"Lead Generation", sub:"How enquiries come in and how fast you respond" },
   { title:"Sales & Follow-up", sub:"How your team handles and converts leads" },
@@ -323,11 +311,8 @@ function AuditForm({ onSubmit }) {
             <h2 style={{ fontSize:20,fontWeight:700,letterSpacing:"-0.02em",marginBottom:4 }}>{STEPS[step].title}</h2>
             <p style={{ fontSize:14,color:"#6b6f88" }}>{STEPS[step].sub}</p>
           </div>
-
           <StepComp d={data} u={upd} />
-
           <hr className="div" />
-
           <div style={{ display:"flex",gap:10 }}>
             {step>0 && <button className="btn bo" onClick={()=>setStep(s=>s-1)}>← Back</button>}
             <button
@@ -348,7 +333,6 @@ function AuditForm({ onSubmit }) {
   );
 }
 
-/* ── Analyzing Screen ── */
 function Analyzing() {
   const [active,setActive] = useState(0);
   const tasks = [
@@ -387,7 +371,6 @@ function Analyzing() {
   );
 }
 
-/* ── Calculations ── */
 function calc(d) {
   const leads    = Number(d.monthlyLeads)||0;
   const conv     = Number(d.conversionRate)||0;
@@ -426,7 +409,6 @@ function calc(d) {
            lost:Math.round(lost),mLoss,aLoss,wWaste,mWasteCost,rtPenMoney,adWasted,score,growthPct };
 }
 
-/* ── Report ── */
 const inr = n => "₹"+Number(n).toLocaleString("en-IN");
 
 function Gauge({ score }) {
@@ -671,7 +653,6 @@ Write 4 punchy paragraphs: (1) Biggest bottleneck + its rupee impact. (2) Why le
   );
 }
 
-/* ── Lead Capture Screen (now uses Supabase Auth) ── */
 function LeadCapture({ formData, onSubmit }) {
   const [mode, setMode] = useState("choose");
   const [lead, setLead] = useState({ name:"", email:"", phone:"", agency:"" });
@@ -690,8 +671,8 @@ function LeadCapture({ formData, onSubmit }) {
     onSubmit(ld);
   };
 
-  // ✅ Supabase Google Sign-In — replaces the broken OAuth popup
   const handleGoogle = async () => {
+    if (formData) sessionStorage.setItem("audit_fd", JSON.stringify(formData));
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
@@ -719,7 +700,6 @@ function LeadCapture({ formData, onSubmit }) {
     <div style={{ minHeight:"100vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"84px 20px 60px",position:"relative",overflow:"hidden" }}>
       <div style={{ position:"absolute",top:"5%",left:"50%",transform:"translateX(-50%)",width:600,height:300,background:"radial-gradient(ellipse,rgba(94,96,255,0.08) 0%,transparent 70%)",pointerEvents:"none" }} />
       <div style={{ width:"100%",maxWidth:460,position:"relative" }}>
-
         <div className="anim" style={{ background:"linear-gradient(135deg,rgba(94,96,255,0.08),rgba(14,165,233,0.05))",border:"1px solid rgba(94,96,255,0.2)",borderRadius:16,padding:"20px 24px",marginBottom:24,display:"flex",gap:16,alignItems:"center" }}>
           <div style={{ width:44,height:44,borderRadius:12,background:"linear-gradient(135deg,#5E60FF,#0ea5e9)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0 }}>◈</div>
           <div>
@@ -739,7 +719,6 @@ function LeadCapture({ formData, onSubmit }) {
             </p>
           </div>
 
-          {/* ✅ Clean Google button using Supabase */}
           <button
             onClick={handleGoogle}
             style={{ width:"100%",background:"#fff",color:"#1f2937",border:"1px solid #e5e7eb",borderRadius:10,padding:"12px 20px",fontSize:15,fontWeight:500,cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",justifyContent:"center",gap:12,transition:"all .18s",marginBottom:16 }}
@@ -777,39 +756,32 @@ function LeadCapture({ formData, onSubmit }) {
     <div style={{ minHeight:"100vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"84px 20px 60px" }}>
       <div style={{ width:"100%",maxWidth:460 }}>
         <button className="btn bo" style={{ fontSize:13,padding:"7px 14px",marginBottom:20 }} onClick={()=>setMode("choose")}>← Back</button>
-
         <div className="card anim" style={{ padding:"28px 28px 24px" }}>
           <div style={{ marginBottom:24 }}>
             <h2 style={{ fontSize:21,fontWeight:700,letterSpacing:"-0.02em",marginBottom:6 }}>Your details</h2>
             <p style={{ fontSize:14,color:"#6b6f88" }}>We'll send your audit report to the email you provide.</p>
           </div>
-
           <div className="field">
             <label className="fl">Full Name <span style={{ color:"#ef4444",fontSize:12 }}>*</span></label>
             <input type="text" placeholder="e.g. Rahul Sharma" value={lead.name} onChange={e=>upd("name",e.target.value)} style={{ borderColor: errors.name ? "#ef4444" : undefined }} />
             {errors.name && <div style={{ fontSize:12,color:"#ef4444",marginTop:4 }}>{errors.name}</div>}
           </div>
-
           <div className="field">
             <label className="fl">Work Email <span style={{ color:"#ef4444",fontSize:12 }}>*</span></label>
             <input type="text" placeholder="e.g. rahul@agency.com" value={lead.email} onChange={e=>upd("email",e.target.value)} style={{ borderColor: errors.email ? "#ef4444" : undefined }} />
             {errors.email && <div style={{ fontSize:12,color:"#ef4444",marginTop:4 }}>{errors.email}</div>}
           </div>
-
           <div className="field">
             <label className="fl">Agency Name <span style={{ color:"#4a4d66",fontWeight:400,fontSize:12 }}>— optional</span></label>
             <input type="text" placeholder="e.g. Global Study Consultants" value={lead.agency} onChange={e=>upd("agency",e.target.value)} />
           </div>
-
           <div className="field">
             <label className="fl">Phone Number <span style={{ color:"#4a4d66",fontWeight:400,fontSize:12 }}>— optional</span></label>
             <input type="text" placeholder="e.g. +91 98765 43210" value={lead.phone} onChange={e=>upd("phone",e.target.value)} />
           </div>
-
           <button className="btn bp" style={{ width:"100%",fontSize:15,padding:"13px 0",opacity:submitting?0.7:1,marginTop:4 }} onClick={handleManual} disabled={submitting}>
             {submitting ? "Saving…" : "View My Audit Report →"}
           </button>
-
           <p style={{ fontSize:11,color:"#2e3050",textAlign:"center",marginTop:14,lineHeight:1.6 }}>
             🔒 No spam. Your details are used only to deliver your report.
           </p>
@@ -826,21 +798,25 @@ export default function App() {
   const [lead, setLead] = useState(null);
   const [user, setUser] = useState(null);
 
-  // ✅ Listen for Supabase auth changes (handles redirect back after Google login)
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
         setUser(session.user);
-        // If they came back from Google redirect mid-audit, send them to report
         const params = new URLSearchParams(window.location.search);
-        if (params.get("audit") === "true" && fd) {
-          const profile = {
-            name: session.user.user_metadata?.full_name || "",
-            email: session.user.email || "",
-          };
-          setLead(profile);
-          setScreen("analyzing");
-          setTimeout(() => setScreen("report"), 5800);
+        if (params.get("audit") === "true") {
+          const saved = sessionStorage.getItem("audit_fd");
+          if (saved) {
+            const restoredFd = JSON.parse(saved);
+            sessionStorage.removeItem("audit_fd");
+            setFd(restoredFd);
+            const profile = {
+              name: session.user.user_metadata?.full_name || "",
+              email: session.user.email || "",
+            };
+            setLead(profile);
+            setScreen("analyzing");
+            setTimeout(() => setScreen("report"), 5800);
+          }
         }
       }
     });
