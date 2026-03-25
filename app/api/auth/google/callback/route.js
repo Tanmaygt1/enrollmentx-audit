@@ -13,7 +13,6 @@ export async function GET(req) {
     );
   }
 
-  // Exchange code for token
   const tokenRes = await fetch("https://oauth2.googleapis.com/token", {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -43,15 +42,3 @@ export async function GET(req) {
     { headers: { "Content-Type": "text/html" } }
   );
 }
-```
-
-### 3. Add these 3 env vars to Vercel
-```
-NEXT_PUBLIC_GOOGLE_CLIENT_ID    = your_google_client_id
-GOOGLE_CLIENT_SECRET            = your_google_client_secret  
-NEXT_PUBLIC_APP_URL             = https://enrollmentxaudit.vercel.app
-```
-
-### 4. Add callback URL to Google Cloud Console
-```
-https://enrollmentxaudit.vercel.app/api/auth/google/callback
