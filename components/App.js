@@ -660,6 +660,12 @@ function LeadCapture({ formData, onSubmit }) {
   const [errors, setErrors] = useState({});
   const upd = (k,v) => { setLead(p=>({...p,[k]:v})); setErrors(e=>({...e,[k]:""})); };
 
+  // Calculate a teaser score to show blurred
+  const teaserScore = (() => {
+    const m = calc(formData || {});
+    return { score: m.score, mLoss: m.mLoss, lost: m.lost };
+  })();
+
   const save = async (ld) => {
     try {
       await fetch("/api/capture", {
@@ -675,9 +681,7 @@ function LeadCapture({ formData, onSubmit }) {
     if (formData) sessionStorage.setItem("audit_fd", JSON.stringify(formData));
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: {
-        redirectTo: window.location.origin + "?audit=true",
-      },
+      options: { redirectTo: window.location.origin + "?audit=true" },
     });
     if (error) {
       console.error("Google sign-in error:", error.message);
@@ -697,33 +701,73 @@ function LeadCapture({ formData, onSubmit }) {
   };
 
   if (mode === "choose") return (
-    <div style={{ minHeight:"100vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"84px 20px 60px",position:"relative",overflow:"hidden" }}>
-      <div style={{ position:"absolute",top:"5%",left:"50%",transform:"translateX(-50%)",width:600,height:300,background:"radial-gradient(ellipse,rgba(94,96,255,0.08) 0%,transparent 70%)",pointerEvents:"none" }} />
-      <div style={{ width:"100%",maxWidth:460,position:"relative" }}>
-        <div className="anim" style={{ background:"linear-gradient(135deg,rgba(94,96,255,0.08),rgba(14,165,233,0.05))",border:"1px solid rgba(94,96,255,0.2)",borderRadius:16,padding:"20px 24px",marginBottom:24,display:"flex",gap:16,alignItems:"center" }}>
-          <div style={{ width:44,height:44,borderRadius:12,background:"linear-gradient(135deg,#5E60FF,#0ea5e9)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0 }}>◈</div>
-          <div>
-            <div style={{ fontSize:15,fontWeight:700,color:"#e8eaf0",marginBottom:3 }}>Your AI Audit Report is ready</div>
-            <div style={{ fontSize:13,color:"#6b6f88" }}>Revenue analysis · AI recommendations · Action plan</div>
+    <div style={{ minHeight:"100vh", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", padding:"84px 20px 60px", position:"relative", overflow:"hidden", background:"#08090e" }}>
+      {/* Background glow */}
+      <div style={{ position:"absolute", top:"10%", left:"50%", transform:"translateX(-50%)", width:800, height:400, background:"radial-gradient(ellipse,rgba(94,96,255,0.07) 0%,transparent 70%)", pointerEvents:"none" }} />
+
+      <div style={{ width:"100%", maxWidth:520, position:"relative" }}>
+
+        {/* Blurred score preview — teaser */}
+        <div className="anim" style={{ position:"relative", marginBottom:20, borderRadius:16, overflow:"hidden", border:"1px solid rgba(94,96,255,0.2)" }}>
+          {/* Blurred report preview */}
+          <div style={{ filter:"blur(6px)", pointerEvents:"none", userSelect:"none", background:"#0f1017", padding:"20px 24px", display:"flex", gap:20, alignItems:"center", flexWrap:"wrap" }}>
+            <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:6 }}>
+              <svg width={80} height={80} viewBox="0 0 128 128">
+                <circle cx={64} cy={64} r={52} fill="none" stroke="#1e2030" strokeWidth={10}/>
+                <circle cx={64} cy={64} r={52} fill="none" stroke={teaserScore.score < 42 ? "#ef4444" : "#f59e0b"} strokeWidth={10}
+                  strokeDasharray={2*Math.PI*52} strokeDashoffset={2*Math.PI*52 - (teaserScore.score/100)*2*Math.PI*52}
+                  strokeLinecap="round" transform="rotate(-90 64 64)"/>
+                <text x={64} y={60} textAnchor="middle" fill="#e8eaf0" fontSize={28} fontWeight={700} fontFamily="monospace">{teaserScore.score}</text>
+                <text x={64} y={76} textAnchor="middle" fill="#6b6f88" fontSize={13}>/100</text>
+              </svg>
+            </div>
+            <div style={{ flex:1, minWidth:160 }}>
+              <div style={{ fontSize:12, color:"#4a4d66", marginBottom:4, textTransform:"uppercase", letterSpacing:"0.08em" }}>Monthly Revenue Loss</div>
+              <div style={{ fontSize:28, fontWeight:700, color:"#ef4444", fontFamily:"monospace" }}>{inr(teaserScore.mLoss)}</div>
+              <div style={{ fontSize:12, color:"#4a4d66", marginTop:4 }}>{teaserScore.lost} leads slipping away each month</div>
+            </div>
+            <div style={{ flex:1, minWidth:160 }}>
+              <div style={{ fontSize:12, color:"#4a4d66", marginBottom:8, textTransform:"uppercase", letterSpacing:"0.08em" }}>Top Issues Found</div>
+              {["Response time penalty", "Conversion gap", "Manual work waste"].map((i,idx) => (
+                <div key={idx} style={{ display:"flex", alignItems:"center", gap:8, marginBottom:6 }}>
+                  <div style={{ width:6, height:6, borderRadius:"50%", background:"#ef4444", flexShrink:0 }} />
+                  <div style={{ fontSize:13, color:"#6b6f88" }}>{i}</div>
+                </div>
+              ))}
+            </div>
           </div>
-          <div style={{ marginLeft:"auto",flexShrink:0 }}>
-            <div style={{ width:10,height:10,borderRadius:"50%",background:"#10b981",animation:"pulse 2s infinite" }} />
+
+          {/* Lock overlay */}
+          <div style={{ position:"absolute", inset:0, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", background:"rgba(8,9,14,0.72)", backdropFilter:"blur(1px)", gap:10 }}>
+            <div style={{ width:40, height:40, borderRadius:12, background:"rgba(94,96,255,0.15)", border:"1px solid rgba(94,96,255,0.3)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:18 }}>🔒</div>
+            <div style={{ fontSize:14, fontWeight:600, color:"#e8eaf0" }}>Your report is ready</div>
+            <div style={{ fontSize:13, color:"#6b6f88" }}>Sign in to unlock your full audit</div>
           </div>
         </div>
 
-        <div className="card anim d1" style={{ padding:"28px 28px 24px" }}>
-          <div style={{ textAlign:"center",marginBottom:28 }}>
-            <h2 style={{ fontSize:22,fontWeight:700,letterSpacing:"-0.025em",marginBottom:8 }}>Unlock your report</h2>
-            <p style={{ fontSize:14,color:"#6b6f88",lineHeight:1.7 }}>
-              Sign in to access your full audit — we'll also send you a copy to refer back to anytime.
+        {/* Urgency strip */}
+        <div className="anim d1" style={{ background:"rgba(239,68,68,0.06)", border:"1px solid rgba(239,68,68,0.15)", borderRadius:10, padding:"10px 16px", marginBottom:20, display:"flex", alignItems:"center", gap:10 }}>
+          <span style={{ fontSize:16 }}>⚠️</span>
+          <span style={{ fontSize:13, color:"#f87171", lineHeight:1.5 }}>
+            Your agency is losing <strong>{inr(teaserScore.mLoss)}/month</strong> right now. Sign in to see the full breakdown and fix plan.
+          </span>
+        </div>
+
+        {/* Sign in card */}
+        <div className="card anim d2" style={{ padding:"28px" }}>
+          <div style={{ textAlign:"center", marginBottom:24 }}>
+            <h2 style={{ fontSize:20, fontWeight:700, letterSpacing:"-0.025em", marginBottom:6 }}>Unlock your free audit report</h2>
+            <p style={{ fontSize:13, color:"#6b6f88", lineHeight:1.65 }}>
+              Takes 5 seconds · No credit card · 100% free
             </p>
           </div>
 
+          {/* Google — dominant CTA */}
           <button
             onClick={handleGoogle}
-            style={{ width:"100%",background:"#fff",color:"#1f2937",border:"1px solid #e5e7eb",borderRadius:10,padding:"12px 20px",fontSize:15,fontWeight:500,cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",justifyContent:"center",gap:12,transition:"all .18s",marginBottom:16 }}
-            onMouseEnter={e=>e.currentTarget.style.background="#f9fafb"}
-            onMouseLeave={e=>e.currentTarget.style.background="#fff"}
+            style={{ width:"100%", background:"#fff", color:"#1f2937", border:"none", borderRadius:10, padding:"14px 20px", fontSize:15, fontWeight:600, cursor:"pointer", fontFamily:"inherit", display:"flex", alignItems:"center", justifyContent:"center", gap:12, transition:"all .18s", marginBottom:12, boxShadow:"0 2px 12px rgba(0,0,0,0.3)" }}
+            onMouseEnter={e=>{ e.currentTarget.style.transform="translateY(-1px)"; e.currentTarget.style.boxShadow="0 6px 20px rgba(0,0,0,0.4)"; }}
+            onMouseLeave={e=>{ e.currentTarget.style.transform="translateY(0)"; e.currentTarget.style.boxShadow="0 2px 12px rgba(0,0,0,0.3)"; }}
           >
             <svg width="18" height="18" viewBox="0 0 24 24">
               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -731,58 +775,62 @@ function LeadCapture({ formData, onSubmit }) {
               <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/>
               <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.47 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
             </svg>
-            Continue with Google
+            Continue with Google — it's free
           </button>
 
-          <div style={{ display:"flex",alignItems:"center",gap:12,marginBottom:16 }}>
-            <div style={{ flex:1,height:"1px",background:"#1e2030" }} />
-            <span style={{ fontSize:12,color:"#3a3d55",fontWeight:500 }}>or fill in your details</span>
-            <div style={{ flex:1,height:"1px",background:"#1e2030" }} />
+          <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:12 }}>
+            <div style={{ flex:1, height:"1px", background:"#1e2030" }} />
+            <span style={{ fontSize:12, color:"#3a3d55", fontWeight:500 }}>or</span>
+            <div style={{ flex:1, height:"1px", background:"#1e2030" }} />
           </div>
 
-          <button className="btn bo" style={{ width:"100%",fontSize:14,padding:"12px 0" }} onClick={() => setMode("manual")}>
-            Enter details manually →
+          <button className="btn bo" style={{ width:"100%", fontSize:13, padding:"11px 0", color:"#4a4d66" }} onClick={() => setMode("manual")}>
+            Enter details manually
           </button>
 
-          <p style={{ fontSize:11,color:"#2e3050",textAlign:"center",marginTop:16,lineHeight:1.6 }}>
-            🔒 No spam. Your data is only used to deliver your report and follow up with you.
-          </p>
+          {/* Trust signals */}
+          <div style={{ display:"flex", justifyContent:"center", gap:20, marginTop:18, flexWrap:"wrap" }}>
+            {["🔒 No spam", "✓ Free forever", "📧 Report sent to email"].map((t,i) => (
+              <span key={i} style={{ fontSize:11, color:"#3a3d55" }}>{t}</span>
+            ))}
+          </div>
         </div>
       </div>
     </div>
   );
 
+  // Manual form
   return (
-    <div style={{ minHeight:"100vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"84px 20px 60px" }}>
-      <div style={{ width:"100%",maxWidth:460 }}>
-        <button className="btn bo" style={{ fontSize:13,padding:"7px 14px",marginBottom:20 }} onClick={()=>setMode("choose")}>← Back</button>
-        <div className="card anim" style={{ padding:"28px 28px 24px" }}>
+    <div style={{ minHeight:"100vh", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", padding:"84px 20px 60px" }}>
+      <div style={{ width:"100%", maxWidth:460 }}>
+        <button className="btn bo" style={{ fontSize:13, padding:"7px 14px", marginBottom:20 }} onClick={()=>setMode("choose")}>← Back</button>
+        <div className="card anim" style={{ padding:"28px" }}>
           <div style={{ marginBottom:24 }}>
-            <h2 style={{ fontSize:21,fontWeight:700,letterSpacing:"-0.02em",marginBottom:6 }}>Your details</h2>
-            <p style={{ fontSize:14,color:"#6b6f88" }}>We'll send your audit report to the email you provide.</p>
+            <h2 style={{ fontSize:21, fontWeight:700, letterSpacing:"-0.02em", marginBottom:6 }}>Your details</h2>
+            <p style={{ fontSize:14, color:"#6b6f88" }}>We'll send your full audit report to your email.</p>
           </div>
           <div className="field">
-            <label className="fl">Full Name <span style={{ color:"#ef4444",fontSize:12 }}>*</span></label>
+            <label className="fl">Full Name <span style={{ color:"#ef4444", fontSize:12 }}>*</span></label>
             <input type="text" placeholder="e.g. Rahul Sharma" value={lead.name} onChange={e=>upd("name",e.target.value)} style={{ borderColor: errors.name ? "#ef4444" : undefined }} />
-            {errors.name && <div style={{ fontSize:12,color:"#ef4444",marginTop:4 }}>{errors.name}</div>}
+            {errors.name && <div style={{ fontSize:12, color:"#ef4444", marginTop:4 }}>{errors.name}</div>}
           </div>
           <div className="field">
-            <label className="fl">Work Email <span style={{ color:"#ef4444",fontSize:12 }}>*</span></label>
+            <label className="fl">Work Email <span style={{ color:"#ef4444", fontSize:12 }}>*</span></label>
             <input type="text" placeholder="e.g. rahul@agency.com" value={lead.email} onChange={e=>upd("email",e.target.value)} style={{ borderColor: errors.email ? "#ef4444" : undefined }} />
-            {errors.email && <div style={{ fontSize:12,color:"#ef4444",marginTop:4 }}>{errors.email}</div>}
+            {errors.email && <div style={{ fontSize:12, color:"#ef4444", marginTop:4 }}>{errors.email}</div>}
           </div>
           <div className="field">
-            <label className="fl">Agency Name <span style={{ color:"#4a4d66",fontWeight:400,fontSize:12 }}>— optional</span></label>
+            <label className="fl">Agency Name <span style={{ color:"#4a4d66", fontWeight:400, fontSize:12 }}>— optional</span></label>
             <input type="text" placeholder="e.g. Global Study Consultants" value={lead.agency} onChange={e=>upd("agency",e.target.value)} />
           </div>
           <div className="field">
-            <label className="fl">Phone Number <span style={{ color:"#4a4d66",fontWeight:400,fontSize:12 }}>— optional</span></label>
+            <label className="fl">Phone Number <span style={{ color:"#4a4d66", fontWeight:400, fontSize:12 }}>— optional</span></label>
             <input type="text" placeholder="e.g. +91 98765 43210" value={lead.phone} onChange={e=>upd("phone",e.target.value)} />
           </div>
-          <button className="btn bp" style={{ width:"100%",fontSize:15,padding:"13px 0",opacity:submitting?0.7:1,marginTop:4 }} onClick={handleManual} disabled={submitting}>
+          <button className="btn bp" style={{ width:"100%", fontSize:15, padding:"13px 0", opacity:submitting?0.7:1, marginTop:4 }} onClick={handleManual} disabled={submitting}>
             {submitting ? "Saving…" : "View My Audit Report →"}
           </button>
-          <p style={{ fontSize:11,color:"#2e3050",textAlign:"center",marginTop:14,lineHeight:1.6 }}>
+          <p style={{ fontSize:11, color:"#2e3050", textAlign:"center", marginTop:14, lineHeight:1.6 }}>
             🔒 No spam. Your details are used only to deliver your report.
           </p>
         </div>
