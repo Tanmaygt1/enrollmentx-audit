@@ -38,6 +38,7 @@ const G = `
   .cb   { background:#0a0b12;border:1px solid #1e2030;border-radius:8px;padding:9px 15px;font-size:14px;color:#6b6f88;cursor:pointer;transition:all .18s;font-family:inherit; }
   .cb:hover { border-color:#2e3050;color:#c0c4dc; }
   .cb.sel { border-color:#5E60FF;color:#8b8eff;background:rgba(94,96,255,0.08); }
+  .multi-hint { font-size:11px;color:#3a3d55;margin-bottom:8px;display:flex;align-items:center;gap:5px; }
   .field { margin-bottom:20px; }
   .slabel { font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#4a4d66;margin-bottom:12px; }
   .mono { font-family:'JetBrains Mono',monospace;letter-spacing:-0.03em; }
@@ -56,11 +57,66 @@ const G = `
   .nav { position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(8,9,14,.88);backdrop-filter:blur(12px);border-bottom:1px solid #1e2030;display:flex;align-items:center;padding:0 24px;height:60px; }
 `;
 
+// ── Helpers ──────────────────────────────────────────────────────────────────
+
+/** Toggle a value in/out of an array field */
+function toggleMulti(data, field, val) {
+  const arr = Array.isArray(data[field]) ? data[field] : [];
+  return arr.includes(val) ? arr.filter(v => v !== val) : [...arr, val];
+}
+
+/** Check if an array field has a specific value */
+function hasVal(data, field, val) {
+  const arr = Array.isArray(data[field]) ? data[field] : [];
+  return arr.includes(val);
+}
+
+/** Stringify an array field for prompts / display */
+function joinField(data, field) {
+  const arr = Array.isArray(data[field]) ? data[field] : data[field] ? [data[field]] : [];
+  return arr.join(", ") || "not specified";
+}
+
+// ── Single-select choice button (unchanged behaviour) ────────────────────────
+function CB({ val, label, hint, field, data, upd }) {
+  return (
+    <button className={`cb ${data[field] === val ? "sel" : ""}`} onClick={() => upd(field, val)}>
+      {label}{hint && <span style={{ color: data[field] === val ? "#6e71c4" : "#3a3d55", marginLeft: 5, fontSize: 12 }}>{hint}</span>}
+    </button>
+  );
+}
+
+// ── Multi-select choice button (new) ────────────────────────────────────────
+function MCB({ val, label, hint, field, data, upd }) {
+  const selected = hasVal(data, field, val);
+  return (
+    <button
+      className={`cb ${selected ? "sel" : ""}`}
+      onClick={() => upd(field, toggleMulti(data, field, val))}
+    >
+      <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+        {/* tiny checkbox indicator */}
+        <span style={{
+          width: 13, height: 13, borderRadius: 3, flexShrink: 0, display: "inline-flex",
+          alignItems: "center", justifyContent: "center",
+          border: `1.5px solid ${selected ? "#5E60FF" : "#2e3050"}`,
+          background: selected ? "#5E60FF" : "transparent",
+          transition: "all .15s",
+        }}>
+          {selected && <svg width="8" height="6" viewBox="0 0 8 6" fill="none"><path d="M1 3l2 2 4-4" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+        </span>
+        {label}
+      </span>
+      {hint && <span style={{ color: selected ? "#6e71c4" : "#3a3d55", marginLeft: 5, fontSize: 12 }}>{hint}</span>}
+    </button>
+  );
+}
+
 function Logo({ size = 18 }) {
   return (
-    <div style={{ display:"flex",alignItems:"center",gap:9 }}>
-      <div style={{ width:size+8,height:size+8,borderRadius:8,background:"linear-gradient(135deg,#5E60FF,#0ea5e9)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:size*0.7,fontWeight:700,color:"#fff",flexShrink:0 }}>E</div>
-      <span style={{ fontSize:size+1,fontWeight:700,letterSpacing:"-0.03em",color:"#e8eaf0" }}>Enrollment<span style={{ color:"#5E60FF" }}>X</span></span>
+    <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
+      <div style={{ width: size + 8, height: size + 8, borderRadius: 8, background: "linear-gradient(135deg,#5E60FF,#0ea5e9)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: size * 0.7, fontWeight: 700, color: "#fff", flexShrink: 0 }}>E</div>
+      <span style={{ fontSize: size + 1, fontWeight: 700, letterSpacing: "-0.03em", color: "#e8eaf0" }}>Enrollment<span style={{ color: "#5E60FF" }}>X</span></span>
     </div>
   );
 }
@@ -69,15 +125,15 @@ function Nav({ user, onSignOut }) {
   return (
     <nav className="nav">
       <Logo />
-      <div style={{ marginLeft:"auto", display:"flex", alignItems:"center", gap:12 }}>
+      <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 12 }}>
         {user && (
           <>
-            <span style={{ fontSize:13, color:"#6b6f88" }}>{user.email}</span>
-            <button className="btn bo" style={{ fontSize:13, padding:"6px 14px" }} onClick={onSignOut}>Sign out</button>
+            <span style={{ fontSize: 13, color: "#6b6f88" }}>{user.email}</span>
+            <button className="btn bo" style={{ fontSize: 13, padding: "6px 14px" }} onClick={onSignOut}>Sign out</button>
           </>
         )}
         {!user && (
-          <div style={{ fontSize:13,color:"#3a3d55",fontWeight:500 }}>AI Audit System</div>
+          <div style={{ fontSize: 13, color: "#3a3d55", fontWeight: 500 }}>AI Audit System</div>
         )}
       </div>
     </nav>
@@ -86,31 +142,31 @@ function Nav({ user, onSignOut }) {
 
 function Landing({ onStart }) {
   return (
-    <div style={{ minHeight:"100vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"100px 24px 60px",position:"relative",overflow:"hidden" }}>
-      <div style={{ position:"absolute",top:"5%",left:"50%",transform:"translateX(-50%)",width:700,height:350,background:"radial-gradient(ellipse,rgba(94,96,255,0.1) 0%,transparent 70%)",pointerEvents:"none" }} />
-      <div style={{ maxWidth:660,textAlign:"center",position:"relative" }}>
-        <div className="anim" style={{ display:"inline-flex",alignItems:"center",gap:8,background:"rgba(94,96,255,0.08)",border:"1px solid rgba(94,96,255,0.2)",borderRadius:100,padding:"6px 16px",marginBottom:32 }}>
-          <span style={{ width:7,height:7,borderRadius:"50%",background:"#5E60FF",animation:"pulse 2s infinite",display:"inline-block" }} />
-          <span style={{ fontSize:13,color:"#8b8eff",fontWeight:500 }}>Free · No credit card · 2 minutes</span>
+    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "100px 24px 60px", position: "relative", overflow: "hidden" }}>
+      <div style={{ position: "absolute", top: "5%", left: "50%", transform: "translateX(-50%)", width: 700, height: 350, background: "radial-gradient(ellipse,rgba(94,96,255,0.1) 0%,transparent 70%)", pointerEvents: "none" }} />
+      <div style={{ maxWidth: 660, textAlign: "center", position: "relative" }}>
+        <div className="anim" style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(94,96,255,0.08)", border: "1px solid rgba(94,96,255,0.2)", borderRadius: 100, padding: "6px 16px", marginBottom: 32 }}>
+          <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#5E60FF", animation: "pulse 2s infinite", display: "inline-block" }} />
+          <span style={{ fontSize: 13, color: "#8b8eff", fontWeight: 500 }}>Free · No credit card · 2 minutes</span>
         </div>
-        <h1 className="anim d1" style={{ fontSize:"clamp(32px,5.5vw,56px)",fontWeight:700,lineHeight:1.12,letterSpacing:"-0.03em",marginBottom:20 }}>
+        <h1 className="anim d1" style={{ fontSize: "clamp(32px,5.5vw,56px)", fontWeight: 700, lineHeight: 1.12, letterSpacing: "-0.03em", marginBottom: 20 }}>
           Find out exactly how much revenue<br />
-          <span style={{ background:"linear-gradient(90deg,#5E60FF,#0ea5e9)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent" }}>
+          <span style={{ background: "linear-gradient(90deg,#5E60FF,#0ea5e9)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
             your agency is losing today
           </span>
         </h1>
-        <p className="anim d2" style={{ fontSize:17,color:"#6b6f88",lineHeight:1.8,maxWidth:500,margin:"0 auto 38px" }}>
+        <p className="anim d2" style={{ fontSize: 17, color: "#6b6f88", lineHeight: 1.8, maxWidth: 500, margin: "0 auto 38px" }}>
           Answer 15 quick questions about your study abroad business. EnrollmentX AI analyses your data and delivers a personalised audit — with exact ₹ figures and a step-by-step AI fix plan.
         </p>
         <div className="anim d3">
           <button className="btn bcta" onClick={onStart}>Start My Free Audit →</button>
-          <p style={{ fontSize:13,color:"#3a3d55",marginTop:12 }}>Takes about 2–3 minutes · 100% confidential</p>
+          <p style={{ fontSize: 13, color: "#3a3d55", marginTop: 12 }}>Takes about 2–3 minutes · 100% confidential</p>
         </div>
-        <div className="anim d4" style={{ display:"flex",gap:0,justifyContent:"center",marginTop:56,borderTop:"1px solid #1e2030",paddingTop:36,flexWrap:"wrap" }}>
-          {[["₹2.4Cr+","Average annual revenue leak found per agency"],["87%","Of agencies miss key AI automation opportunities"],["2–3 min","To get your full personalised report"]].map(([n,d]) => (
-            <div key={n} style={{ flex:1,minWidth:140,textAlign:"center",padding:"0 20px" }}>
-              <div className="mono" style={{ fontSize:28,fontWeight:700,color:"#e8eaf0" }}>{n}</div>
-              <div style={{ fontSize:13,color:"#4a4d66",marginTop:5,lineHeight:1.5 }}>{d}</div>
+        <div className="anim d4" style={{ display: "flex", gap: 0, justifyContent: "center", marginTop: 56, borderTop: "1px solid #1e2030", paddingTop: 36, flexWrap: "wrap" }}>
+          {[["₹2.4Cr+", "Average annual revenue leak found per agency"], ["87%", "Of agencies miss key AI automation opportunities"], ["2–3 min", "To get your full personalised report"]].map(([n, d]) => (
+            <div key={n} style={{ flex: 1, minWidth: 140, textAlign: "center", padding: "0 20px" }}>
+              <div className="mono" style={{ fontSize: 28, fontWeight: 700, color: "#e8eaf0" }}>{n}</div>
+              <div style={{ fontSize: 13, color: "#4a4d66", marginTop: 5, lineHeight: 1.5 }}>{d}</div>
             </div>
           ))}
         </div>
@@ -120,73 +176,97 @@ function Landing({ onStart }) {
 }
 
 const STEPS = [
-  { title:"Lead Generation", sub:"How enquiries come in and how fast you respond" },
-  { title:"Sales & Follow-up", sub:"How your team handles and converts leads" },
-  { title:"Team & Time", sub:"Your team size and how counselor time is spent" },
-  { title:"Marketing & Budget", sub:"Your ad spend and cost per lead" },
-  { title:"Operations & Tools", sub:"Systems and tools your agency currently uses" },
+  { title: "Lead Generation", sub: "How enquiries come in and how fast you respond" },
+  { title: "Sales & Follow-up", sub: "How your team handles and converts leads" },
+  { title: "Team & Time", sub: "Your team size and how counselor time is spent" },
+  { title: "Marketing & Budget", sub: "Your ad spend and cost per lead" },
+  { title: "Operations & Tools", sub: "Systems and tools your agency currently uses" },
 ];
 
-function CB({ val, label, hint, field, data, upd }) {
-  return (
-    <button className={`cb ${data[field]===val?"sel":""}`} onClick={()=>upd(field,val)}>
-      {label}{hint&&<span style={{ color:data[field]===val?"#6e71c4":"#3a3d55",marginLeft:5,fontSize:12 }}>{hint}</span>}
-    </button>
-  );
-}
-
+// ── Step 0 — Lead Generation ─────────────────────────────────────────────────
+// leadSource → MULTI-SELECT (agencies use multiple channels)
 function Step0({ d, u }) {
   return <>
     <div className="field">
       <label className="fl">How many enquiries / leads does your agency receive per month?</label>
-      <input type="number" min="0" placeholder="e.g. 150" value={d.monthlyLeads||""} onChange={e=>u("monthlyLeads",e.target.value)} />
+      <input type="number" min="0" placeholder="e.g. 150" value={d.monthlyLeads || ""} onChange={e => u("monthlyLeads", e.target.value)} />
       <p className="fh">Count all channels: walk-ins, calls, WhatsApp, website forms, social media DMs, etc.</p>
     </div>
+
     <div className="field">
       <label className="fl">Where do most of your leads come from?</label>
-      <select value={d.leadSource||""} onChange={e=>u("leadSource",e.target.value)}>
-        <option value="">Select your primary lead source</option>
-        <option value="ads">Paid Ads (Google, Meta / Instagram)</option>
-        <option value="referrals">Referrals from past students or partners</option>
-        <option value="organic">Organic / Website / SEO</option>
-        <option value="walk-ins">Walk-in / In-person enquiries</option>
-        <option value="social">Social media (YouTube, Instagram content)</option>
-      </select>
+      <p className="multi-hint">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><rect x="1" y="1" width="10" height="10" rx="2" stroke="#3a3d55" strokeWidth="1.3"/><path d="M3.5 6l2 2 3-3" stroke="#3a3d55" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>
+        Select all that apply
+      </p>
+      <div className="choice-grid">
+        {[
+          ["ads", "Paid Ads", "— Google, Meta / Instagram"],
+          ["referrals", "Referrals", "— past students or partners"],
+          ["organic", "Organic / SEO", "— website & search"],
+          ["walk-ins", "Walk-ins", "— in-person enquiries"],
+          ["social", "Social Media", "— YouTube, Instagram content"],
+        ].map(([v, l, h]) => <MCB key={v} val={v} label={l} hint={h} field="leadSource" data={d} upd={u} />)}
+      </div>
     </div>
+
     <div className="field">
       <label className="fl">How long does it typically take your team to respond to a new enquiry? (in minutes)</label>
-      <input type="number" min="0" placeholder="e.g. 30" value={d.responseTime||""} onChange={e=>u("responseTime",e.target.value)} />
+      <input type="number" min="0" placeholder="e.g. 30" value={d.responseTime || ""} onChange={e => u("responseTime", e.target.value)} />
       <p className="fh">Be honest — if it takes 2 hours, enter 120. This is one of the biggest revenue levers.</p>
-      {Number(d.responseTime)>10 && <div className="warn">⚠ Leads contacted after 10 minutes are 7× less likely to convert. This will be penalised in your audit score.</div>}
-      {Number(d.responseTime)<=10 && Number(d.responseTime)>0 && <div className="note">✓ Great! You're within the optimal response window.</div>}
+      {Number(d.responseTime) > 10 && <div className="warn">⚠ Leads contacted after 10 minutes are 7× less likely to convert. This will be penalised in your audit score.</div>}
+      {Number(d.responseTime) <= 10 && Number(d.responseTime) > 0 && <div className="note">✓ Great! You're within the optimal response window.</div>}
     </div>
+
     <div className="field">
       <label className="fl">What percentage of your leads actually enroll? (Your conversion rate)</label>
-      <input type="number" min="0" max="100" placeholder="e.g. 8" value={d.conversionRate||""} onChange={e=>u("conversionRate",e.target.value)} />
+      <input type="number" min="0" max="100" placeholder="e.g. 8" value={d.conversionRate || ""} onChange={e => u("conversionRate", e.target.value)} />
       <p className="fh">If you sign up 10 students from 100 enquiries, that's 10%. The industry benchmark is 15%.</p>
-      {Number(d.conversionRate)>0 && Number(d.conversionRate)<15 && <div className="warn">⚠ You're {(15-Number(d.conversionRate)).toFixed(1)}% below the 15% benchmark. This gap will be quantified in rupees.</div>}
+      {Number(d.conversionRate) > 0 && Number(d.conversionRate) < 15 && <div className="warn">⚠ You're {(15 - Number(d.conversionRate)).toFixed(1)}% below the 15% benchmark. This gap will be quantified in rupees.</div>}
     </div>
   </>;
 }
 
+// ── Step 1 — Sales & Follow-up ───────────────────────────────────────────────
+// followUpMethod → MULTI-SELECT (teams use several methods at once)
 function Step1({ d, u }) {
+  const methods = Array.isArray(d.followUpMethod) ? d.followUpMethod : [];
+  const noneSelected = methods.includes("none");
+
   return <>
     <div className="field">
       <label className="fl">How does your team follow up with leads after the first contact?</label>
+      <p className="multi-hint">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><rect x="1" y="1" width="10" height="10" rx="2" stroke="#3a3d55" strokeWidth="1.3"/><path d="M3.5 6l2 2 3-3" stroke="#3a3d55" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>
+        Select all that apply
+      </p>
       <div className="choice-grid">
-        {[["manual","Manual phone calls"],["whatsapp","WhatsApp messages"],["crm","CRM / automated system"],["email","Email only"],["none","We don't follow up regularly"]].map(([v,l])=><CB key={v} val={v} label={l} field="followUpMethod" data={d} upd={u}/>)}
+        {[
+          ["manual", "Phone calls", "— manual outreach"],
+          ["whatsapp", "WhatsApp", "— messages & follow-ups"],
+          ["crm", "CRM / Automation", "— automated sequences"],
+          ["email", "Email", "— campaigns or one-off"],
+          ["none", "No regular follow-up", ""],
+        ].map(([v, l, h]) => (
+          <MCB key={v} val={v} label={l} hint={h} field="followUpMethod" data={d} upd={u} />
+        ))}
       </div>
-      {d.followUpMethod==="none" && <div className="warn">⚠ No follow-up process is one of the top 3 causes of revenue loss in study abroad agencies.</div>}
+      {noneSelected && <div className="warn">⚠ No follow-up process is one of the top 3 causes of revenue loss in study abroad agencies.</div>}
+      {!noneSelected && methods.length >= 2 && (
+        <div className="note">✓ Good — using {methods.length} follow-up channels increases your chances of reaching leads at the right moment.</div>
+      )}
     </div>
-    <div className="field" style={{ marginTop:4 }}>
+
+    <div className="field" style={{ marginTop: 4 }}>
       <label className="fl">On average, how many follow-ups do you make per lead before giving up?</label>
-      <input type="number" min="0" placeholder="e.g. 3" value={d.followUpCount||""} onChange={e=>u("followUpCount",e.target.value)} />
+      <input type="number" min="0" placeholder="e.g. 3" value={d.followUpCount || ""} onChange={e => u("followUpCount", e.target.value)} />
       <p className="fh">Research shows 80% of sales require 5+ follow-ups. Most agencies stop at 1–2.</p>
-      {Number(d.followUpCount)>0 && Number(d.followUpCount)<4 && <div className="note">Consider increasing follow-ups — most conversions happen on the 4th–7th contact.</div>}
+      {Number(d.followUpCount) > 0 && Number(d.followUpCount) < 4 && <div className="note">Consider increasing follow-ups — most conversions happen on the 4th–7th contact.</div>}
     </div>
+
     <div className="field">
       <label className="fl">At which stage do most of your leads go cold or stop responding?</label>
-      <select value={d.dropOffStage||""} onChange={e=>u("dropOffStage",e.target.value)}>
+      <select value={d.dropOffStage || ""} onChange={e => u("dropOffStage", e.target.value)}>
         <option value="">Select the most common drop-off point</option>
         <option value="first-contact">After first contact — they go silent immediately</option>
         <option value="counseling">After the initial counseling session</option>
@@ -199,37 +279,39 @@ function Step1({ d, u }) {
   </>;
 }
 
+// ── Step 2 — Team & Time (unchanged) ─────────────────────────────────────────
 function Step2({ d, u }) {
   return <>
     <div className="field">
       <label className="fl">How many counselors / student advisors does your agency have?</label>
-      <input type="number" min="1" placeholder="e.g. 5" value={d.counselors||""} onChange={e=>u("counselors",e.target.value)} />
+      <input type="number" min="1" placeholder="e.g. 5" value={d.counselors || ""} onChange={e => u("counselors", e.target.value)} />
       <p className="fh">Include all staff who handle student enquiries, even part-time advisors.</p>
     </div>
     <div className="field">
       <label className="fl">On average, how many minutes per week does a counselor spend on each active lead?</label>
-      <input type="number" min="0" placeholder="e.g. 45" value={d.timePerLead||""} onChange={e=>u("timePerLead",e.target.value)} />
+      <input type="number" min="0" placeholder="e.g. 45" value={d.timePerLead || ""} onChange={e => u("timePerLead", e.target.value)} />
       <p className="fh">Include everything: calls, re-sending documents, updating records, answering the same questions.</p>
     </div>
     <div className="field">
       <label className="fl">What percentage of your team's daily work is repetitive and manual?</label>
-      <input type="number" min="0" max="100" placeholder="e.g. 60" value={d.manualWorkPct||""} onChange={e=>u("manualWorkPct",e.target.value)} />
+      <input type="number" min="0" max="100" placeholder="e.g. 60" value={d.manualWorkPct || ""} onChange={e => u("manualWorkPct", e.target.value)} />
       <p className="fh">Examples: re-sending the same brochures, manually updating spreadsheets, answering the same FAQs repeatedly.</p>
-      {Number(d.manualWorkPct)>50 && <div className="warn">⚠ This is significantly above average. AI automation can typically eliminate 60–70% of this workload.</div>}
+      {Number(d.manualWorkPct) > 50 && <div className="warn">⚠ This is significantly above average. AI automation can typically eliminate 60–70% of this workload.</div>}
     </div>
   </>;
 }
 
+// ── Step 3 — Marketing & Budget (unchanged) ───────────────────────────────────
 function Step3({ d, u }) {
   return <>
     <div className="field">
       <label className="fl">How much does your agency spend on advertising per month? (₹)</label>
-      <input type="number" min="0" placeholder="e.g. 50000" value={d.adSpend||""} onChange={e=>u("adSpend",e.target.value)} />
+      <input type="number" min="0" placeholder="e.g. 50000" value={d.adSpend || ""} onChange={e => u("adSpend", e.target.value)} />
       <p className="fh">Include Google Ads, Meta / Instagram Ads, YouTube promotions, or any paid campaigns.</p>
     </div>
     <div className="field">
       <label className="fl">What is your approximate cost per lead? (₹)</label>
-      <input type="number" min="0" placeholder="e.g. 333" value={d.costPerLead||""} onChange={e=>u("costPerLead",e.target.value)} />
+      <input type="number" min="0" placeholder="e.g. 333" value={d.costPerLead || ""} onChange={e => u("costPerLead", e.target.value)} />
       <p className="fh">Formula: Cost per Lead = Ad Spend ÷ Monthly Leads. Leave blank and we'll calculate it for you.</p>
     </div>
     <div className="field">
@@ -240,128 +322,142 @@ function Step3({ d, u }) {
         <CB val="high"   label="High"   hint="— mostly ready-to-enroll students" field="leadQuality" data={d} upd={u} />
       </div>
     </div>
-    <div className="field" style={{ marginTop:4 }}>
+    <div className="field" style={{ marginTop: 4 }}>
       <label className="fl">What is the average revenue your agency earns per enrolled student? (₹)</label>
-      <input type="number" min="0" placeholder="e.g. 150000" value={d.revenuePerStudent||""} onChange={e=>u("revenuePerStudent",e.target.value)} />
+      <input type="number" min="0" placeholder="e.g. 150000" value={d.revenuePerStudent || ""} onChange={e => u("revenuePerStudent", e.target.value)} />
       <p className="fh">Include service fees, commissions, application fees. Default is ₹1,50,000 if left blank.</p>
     </div>
   </>;
 }
 
+// ── Step 4 — Operations & Tools ───────────────────────────────────────────────
+// docHandling → MULTI-SELECT (mixed environments are common)
 function Step4({ d, u }) {
+  const docs = Array.isArray(d.docHandling) ? d.docHandling : [];
+  const hasManual = docs.includes("manual");
+  const hasDigital = docs.includes("digital");
+
   return <>
     <div className="field">
       <label className="fl">How does your agency currently handle student documents?</label>
+      <p className="multi-hint">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><rect x="1" y="1" width="10" height="10" rx="2" stroke="#3a3d55" strokeWidth="1.3"/><path d="M3.5 6l2 2 3-3" stroke="#3a3d55" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>
+        Select all that apply
+      </p>
       <div className="choice-grid">
-        <CB val="manual"  label="Fully manual"  hint="— paper files, email attachments" field="docHandling" data={d} upd={u} />
-        <CB val="semi"    label="Semi-digital"  hint="— mix of digital files and paper"  field="docHandling" data={d} upd={u} />
-        <CB val="digital" label="Fully digital" hint="— cloud storage, digital workflows" field="docHandling" data={d} upd={u} />
+        <MCB val="manual"  label="Paper / physical files" hint="— printed docs, physical folders"  field="docHandling" data={d} upd={u} />
+        <MCB val="email"   label="Email attachments"      hint="— docs sent back and forth by email" field="docHandling" data={d} upd={u} />
+        <MCB val="drive"   label="Cloud storage"          hint="— Google Drive, Dropbox, OneDrive"   field="docHandling" data={d} upd={u} />
+        <MCB val="digital" label="Digital workflow / portal" hint="— structured checklists, auto-verify" field="docHandling" data={d} upd={u} />
       </div>
-      {d.docHandling==="manual" && <div className="warn">⚠ Manual document handling adds 3–4 hours per student on average.</div>}
-      {d.docHandling==="digital" && <div className="note">✓ Great — digital document handling gives you a strong operational base.</div>}
+      {hasManual && !hasDigital && <div className="warn">⚠ Manual document handling adds 3–4 hours per student on average.</div>}
+      {hasDigital && <div className="note">✓ Great — digital document handling gives you a strong operational base.</div>}
+      {hasManual && hasDigital && <div className="note">You're in transition — digitising the remaining manual steps will save significant counselor time.</div>}
     </div>
-    <div className="field" style={{ marginTop:4 }}>
+
+    <div className="field" style={{ marginTop: 4 }}>
       <label className="fl">Does your agency use a CRM to track leads and follow-ups?</label>
       <div className="choice-grid">
         <CB val="yes"    label="Yes, actively" hint="— we track every lead in the CRM"           field="usesCRM" data={d} upd={u} />
         <CB val="partly" label="Partially"     hint="— we have one but don't use it consistently" field="usesCRM" data={d} upd={u} />
         <CB val="no"     label="No CRM"        hint="— we use spreadsheets, WhatsApp, or nothing" field="usesCRM" data={d} upd={u} />
       </div>
-      {d.usesCRM==="no" && <div className="warn">⚠ Agencies without a CRM lose an estimated 35% more leads due to poor follow-up tracking.</div>}
+      {d.usesCRM === "no" && <div className="warn">⚠ Agencies without a CRM lose an estimated 35% more leads due to poor follow-up tracking.</div>}
     </div>
   </>;
 }
 
+// ── Audit Form ─────────────────────────────────────────────────────────────────
 function AuditForm({ onSubmit }) {
   const [step, setStep] = useState(0);
   const [data, setData] = useState({});
-  const upd = (k,v) => setData(p=>({...p,[k]:v}));
+  const upd = (k, v) => setData(p => ({ ...p, [k]: v }));
 
   const ok = () => {
-    if(step===0) return data.monthlyLeads && data.leadSource && data.responseTime && data.conversionRate;
-    if(step===1) return data.followUpMethod && data.followUpCount && data.dropOffStage;
-    if(step===2) return data.counselors && data.timePerLead && data.manualWorkPct;
-    if(step===3) return data.adSpend && data.leadQuality;
-    if(step===4) return data.docHandling && data.usesCRM;
+    if (step === 0) return data.monthlyLeads && Array.isArray(data.leadSource) && data.leadSource.length > 0 && data.responseTime && data.conversionRate;
+    if (step === 1) return Array.isArray(data.followUpMethod) && data.followUpMethod.length > 0 && data.followUpCount && data.dropOffStage;
+    if (step === 2) return data.counselors && data.timePerLead && data.manualWorkPct;
+    if (step === 3) return data.adSpend && data.leadQuality;
+    if (step === 4) return Array.isArray(data.docHandling) && data.docHandling.length > 0 && data.usesCRM;
   };
 
-  const StepComp = [Step0,Step1,Step2,Step3,Step4][step];
+  const StepComp = [Step0, Step1, Step2, Step3, Step4][step];
 
   return (
-    <div style={{ minHeight:"100vh",display:"flex",flexDirection:"column",alignItems:"center",padding:"84px 20px 60px" }}>
-      <div style={{ width:"100%",maxWidth:580 }}>
-        <div style={{ marginBottom:32 }}>
-          <div style={{ display:"flex",alignItems:"center",marginBottom:14 }}>
-            {STEPS.map((s,i)=>(
-              <div key={i} style={{ display:"flex",alignItems:"center",flex:i<STEPS.length-1?1:"none" }}>
-                <div className="sdot" style={{ background:i<step?"#5E60FF":i===step?"rgba(94,96,255,0.12)":"#0f1017", border:`${i===step?"2px":"1px"} solid ${i<=step?"#5E60FF":"#1e2030"}`, color:i<step?"#fff":i===step?"#8b8eff":"#3a3d55" }}>
-                  {i<step?"✓":i+1}
+    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", padding: "84px 20px 60px" }}>
+      <div style={{ width: "100%", maxWidth: 580 }}>
+        <div style={{ marginBottom: 32 }}>
+          <div style={{ display: "flex", alignItems: "center", marginBottom: 14 }}>
+            {STEPS.map((s, i) => (
+              <div key={i} style={{ display: "flex", alignItems: "center", flex: i < STEPS.length - 1 ? 1 : "none" }}>
+                <div className="sdot" style={{ background: i < step ? "#5E60FF" : i === step ? "rgba(94,96,255,0.12)" : "#0f1017", border: `${i === step ? "2px" : "1px"} solid ${i <= step ? "#5E60FF" : "#1e2030"}`, color: i < step ? "#fff" : i === step ? "#8b8eff" : "#3a3d55" }}>
+                  {i < step ? "✓" : i + 1}
                 </div>
-                {i<STEPS.length-1 && <div className={`sline ${i<step?"on":""}`} />}
+                {i < STEPS.length - 1 && <div className={`sline ${i < step ? "on" : ""}`} />}
               </div>
             ))}
           </div>
-          <div style={{ fontSize:13,color:"#4a4d66" }}>
-            Step {step+1} of {STEPS.length} — <span style={{ color:"#6b6f88",fontWeight:500 }}>{STEPS[step].title}</span>
+          <div style={{ fontSize: 13, color: "#4a4d66" }}>
+            Step {step + 1} of {STEPS.length} — <span style={{ color: "#6b6f88", fontWeight: 500 }}>{STEPS[step].title}</span>
           </div>
         </div>
 
         <div className="card anim" key={step}>
-          <div style={{ marginBottom:24 }}>
-            <h2 style={{ fontSize:20,fontWeight:700,letterSpacing:"-0.02em",marginBottom:4 }}>{STEPS[step].title}</h2>
-            <p style={{ fontSize:14,color:"#6b6f88" }}>{STEPS[step].sub}</p>
+          <div style={{ marginBottom: 24 }}>
+            <h2 style={{ fontSize: 20, fontWeight: 700, letterSpacing: "-0.02em", marginBottom: 4 }}>{STEPS[step].title}</h2>
+            <p style={{ fontSize: 14, color: "#6b6f88" }}>{STEPS[step].sub}</p>
           </div>
           <StepComp d={data} u={upd} />
           <hr className="div" />
-          <div style={{ display:"flex",gap:10 }}>
-            {step>0 && <button className="btn bo" onClick={()=>setStep(s=>s-1)}>← Back</button>}
+          <div style={{ display: "flex", gap: 10 }}>
+            {step > 0 && <button className="btn bo" onClick={() => setStep(s => s - 1)}>← Back</button>}
             <button
               className="btn bp"
-              style={{ flex:1 }}
+              style={{ flex: 1 }}
               disabled={!ok()}
-              onClick={()=>{ if(step<4) setStep(s=>s+1); else onSubmit(data); }}
+              onClick={() => { if (step < 4) setStep(s => s + 1); else onSubmit(data); }}
             >
-              {step===4 ? "Generate My Audit Report →" : "Continue →"}
+              {step === 4 ? "Generate My Audit Report →" : "Continue →"}
             </button>
           </div>
-          {!ok() && <p style={{ fontSize:12,color:"#3a3d55",textAlign:"center",marginTop:10 }}>Please answer all questions above to continue</p>}
+          {!ok() && <p style={{ fontSize: 12, color: "#3a3d55", textAlign: "center", marginTop: 10 }}>Please answer all questions above to continue</p>}
         </div>
 
-        <p style={{ textAlign:"center",fontSize:12,color:"#2e3050",marginTop:14 }}>🔒 Your data is used only to generate your report — nothing is stored or shared.</p>
+        <p style={{ textAlign: "center", fontSize: 12, color: "#2e3050", marginTop: 14 }}>🔒 Your data is used only to generate your report — nothing is stored or shared.</p>
       </div>
     </div>
   );
 }
 
 function Analyzing() {
-  const [active,setActive] = useState(0);
+  const [active, setActive] = useState(0);
   const tasks = [
-    { l:"Calculating your lead conversion gap",        d:"Comparing against the 15% industry benchmark…" },
-    { l:"Estimating monthly revenue leakage",           d:"Multiplying lost leads × revenue per student…" },
-    { l:"Quantifying time and operational waste",       d:"Measuring manual work cost at ₹200/hour…" },
-    { l:"Running AI bottleneck diagnosis",              d:"Identifying root causes of drop-offs…" },
-    { l:"Building your personalised action plan",       d:"Preparing specific AI solutions for your agency…" },
+    { l: "Calculating your lead conversion gap",        d: "Comparing against the 15% industry benchmark…" },
+    { l: "Estimating monthly revenue leakage",           d: "Multiplying lost leads × revenue per student…" },
+    { l: "Quantifying time and operational waste",       d: "Measuring manual work cost at ₹200/hour…" },
+    { l: "Running AI bottleneck diagnosis",              d: "Identifying root causes of drop-offs…" },
+    { l: "Building your personalised action plan",       d: "Preparing specific AI solutions for your agency…" },
   ];
-  useEffect(()=>{
-    let i=0;
-    const t=setInterval(()=>{i++;if(i<tasks.length)setActive(i);else clearInterval(t);},1100);
-    return()=>clearInterval(t);
-  },[]);
+  useEffect(() => {
+    let i = 0;
+    const t = setInterval(() => { i++; if (i < tasks.length) setActive(i); else clearInterval(t); }, 1100);
+    return () => clearInterval(t);
+  }, []);
   return (
-    <div style={{ minHeight:"100vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:40 }}>
-      <div style={{ maxWidth:440,width:"100%",textAlign:"center" }}>
-        <div style={{ width:52,height:52,borderRadius:"50%",border:"2px solid #1e2030",borderTopColor:"#5E60FF",margin:"0 auto 28px",animation:"spin .9s linear infinite" }} />
-        <h2 style={{ fontSize:21,fontWeight:700,letterSpacing:"-0.02em",marginBottom:8 }}>Analysing Your Agency</h2>
-        <p style={{ fontSize:14,color:"#6b6f88",marginBottom:36 }}>Your personalised audit is being built — takes about 5 seconds.</p>
-        <div style={{ textAlign:"left",display:"flex",flexDirection:"column",gap:14 }}>
-          {tasks.map((t,i)=>(
-            <div key={i} style={{ display:"flex",gap:14,alignItems:"flex-start",opacity:i<=active?1:0.2,transition:"opacity .4s" }}>
-              <div style={{ width:22,height:22,borderRadius:"50%",flexShrink:0,marginTop:1,background:i<active?"#5E60FF":i===active?"rgba(94,96,255,0.15)":"#0f1017",border:`1px solid ${i<=active?"#5E60FF":"#1e2030"}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,color:i<active?"#fff":"#5E60FF" }}>
-                {i<active?"✓":i===active?<span style={{ width:6,height:6,borderRadius:"50%",background:"#5E60FF",display:"block",animation:"pulse 1s infinite" }}/>:""}
+    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 40 }}>
+      <div style={{ maxWidth: 440, width: "100%", textAlign: "center" }}>
+        <div style={{ width: 52, height: 52, borderRadius: "50%", border: "2px solid #1e2030", borderTopColor: "#5E60FF", margin: "0 auto 28px", animation: "spin .9s linear infinite" }} />
+        <h2 style={{ fontSize: 21, fontWeight: 700, letterSpacing: "-0.02em", marginBottom: 8 }}>Analysing Your Agency</h2>
+        <p style={{ fontSize: 14, color: "#6b6f88", marginBottom: 36 }}>Your personalised audit is being built — takes about 5 seconds.</p>
+        <div style={{ textAlign: "left", display: "flex", flexDirection: "column", gap: 14 }}>
+          {tasks.map((t, i) => (
+            <div key={i} style={{ display: "flex", gap: 14, alignItems: "flex-start", opacity: i <= active ? 1 : 0.2, transition: "opacity .4s" }}>
+              <div style={{ width: 22, height: 22, borderRadius: "50%", flexShrink: 0, marginTop: 1, background: i < active ? "#5E60FF" : i === active ? "rgba(94,96,255,0.15)" : "#0f1017", border: `1px solid ${i <= active ? "#5E60FF" : "#1e2030"}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, color: i < active ? "#fff" : "#5E60FF" }}>
+                {i < active ? "✓" : i === active ? <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#5E60FF", display: "block", animation: "pulse 1s infinite" }} /> : ""}
               </div>
               <div>
-                <div style={{ fontSize:14,fontWeight:500,color:i<=active?"#e8eaf0":"#3a3d55" }}>{t.l}</div>
-                {i===active&&<div style={{ fontSize:12,color:"#5E60FF",marginTop:2 }}>{t.d}</div>}
+                <div style={{ fontSize: 14, fontWeight: 500, color: i <= active ? "#e8eaf0" : "#3a3d55" }}>{t.l}</div>
+                {i === active && <div style={{ fontSize: 12, color: "#5E60FF", marginTop: 2 }}>{t.d}</div>}
               </div>
             </div>
           ))}
@@ -371,296 +467,313 @@ function Analyzing() {
   );
 }
 
+// ── calc — updated to handle array fields ─────────────────────────────────────
 function calc(d) {
-  const leads    = Number(d.monthlyLeads)||0;
-  const conv     = Number(d.conversionRate)||0;
-  const rt       = Number(d.responseTime)||0;
-  const rps      = Number(d.revenuePerStudent)||150000;
-  const counsel  = Number(d.counselors)||1;
-  const tpl      = Number(d.timePerLead)||30;
-  const manual   = Number(d.manualWorkPct)||0;
-  const ad       = Number(d.adSpend)||0;
-  const cpl      = Number(d.costPerLead)||(leads>0?Math.round(ad/leads):0);
-  const BENCH    = 15;
-  const penalty  = rt>10;
-  const effConv  = penalty ? conv*0.7 : conv;
-  const lost     = Math.max(0, leads*(BENCH-effConv)/100);
-  const mLoss    = Math.round(lost*rps);
-  const aLoss    = mLoss*12;
-  const mWaste   = (manual/100)*(tpl/60)*leads;
-  const wWaste   = Math.round(mWaste/4.33);
-  const mWasteCost = Math.round(mWaste*200);
-  const rtPenMoney = penalty ? Math.round(conv*0.3*leads*rps/100) : 0;
-  const adWasted   = Math.round(ad*(1-effConv/100));
+  const leads   = Number(d.monthlyLeads) || 0;
+  const conv    = Number(d.conversionRate) || 0;
+  const rt      = Number(d.responseTime) || 0;
+  const rps     = Number(d.revenuePerStudent) || 150000;
+  const counsel = Number(d.counselors) || 1;
+  const tpl     = Number(d.timePerLead) || 30;
+  const manual  = Number(d.manualWorkPct) || 0;
+  const ad      = Number(d.adSpend) || 0;
+  const cpl     = Number(d.costPerLead) || (leads > 0 ? Math.round(ad / leads) : 0);
 
-  let score=100;
-  if(effConv<BENCH) score-=Math.min(28,Math.round((BENCH-effConv)*2));
-  if(rt>10)         score-=18;
-  if(manual>50)     score-=16;
-  if(d.followUpMethod==="none") score-=14;
-  if(d.usesCRM==="no")   score-=10;
-  if(d.docHandling==="manual") score-=8;
-  if(d.leadQuality==="low")    score-=6;
-  score=Math.max(8,score);
+  // Normalise array fields
+  const followUpArr = Array.isArray(d.followUpMethod) ? d.followUpMethod : (d.followUpMethod ? [d.followUpMethod] : []);
+  const docArr      = Array.isArray(d.docHandling)    ? d.docHandling    : (d.docHandling    ? [d.docHandling]    : []);
 
-  const growthPct = effConv>0 ? Math.min(200,Math.round(((BENCH-effConv)/effConv)*100)) : 80;
+  const BENCH   = 15;
+  const penalty = rt > 10;
+  const effConv = penalty ? conv * 0.7 : conv;
+  const lost    = Math.max(0, leads * (BENCH - effConv) / 100);
+  const mLoss   = Math.round(lost * rps);
+  const aLoss   = mLoss * 12;
+  const mWaste  = (manual / 100) * (tpl / 60) * leads;
+  const wWaste  = Math.round(mWaste / 4.33);
+  const mWasteCost  = Math.round(mWaste * 200);
+  const rtPenMoney  = penalty ? Math.round(conv * 0.3 * leads * rps / 100) : 0;
+  const adWasted    = Math.round(ad * (1 - effConv / 100));
 
-  return { leads,conv,effConv:Math.round(effConv*10)/10,rt,penalty,rps,counsel,tpl,manual,ad,cpl,
-           lost:Math.round(lost),mLoss,aLoss,wWaste,mWasteCost,rtPenMoney,adWasted,score,growthPct };
+  let score = 100;
+  if (effConv < BENCH)                    score -= Math.min(28, Math.round((BENCH - effConv) * 2));
+  if (rt > 10)                            score -= 18;
+  if (manual > 50)                        score -= 16;
+  if (followUpArr.includes("none") || followUpArr.length === 0) score -= 14;
+  if (d.usesCRM === "no")                 score -= 10;
+  if (docArr.includes("manual") && !docArr.includes("digital")) score -= 8;
+  if (d.leadQuality === "low")            score -= 6;
+  score = Math.max(8, score);
+
+  const growthPct = effConv > 0 ? Math.min(200, Math.round(((BENCH - effConv) / effConv) * 100)) : 80;
+
+  return {
+    leads, conv, effConv: Math.round(effConv * 10) / 10, rt, penalty, rps, counsel, tpl, manual, ad, cpl,
+    lost: Math.round(lost), mLoss, aLoss, wWaste, mWasteCost, rtPenMoney, adWasted, score, growthPct,
+    followUpArr, docArr,
+  };
 }
 
-const inr = n => "₹"+Number(n).toLocaleString("en-IN");
+const inr = n => "₹" + Number(n).toLocaleString("en-IN");
 
 function Gauge({ score }) {
-  const col = score>=68?"#10b981":score>=42?"#f59e0b":"#ef4444";
-  const lbl = score>=68?"Moderate":score>=42?"At Risk":"Critical";
-  const r=52,c=2*Math.PI*r,off=c-(score/100)*c;
+  const col = score >= 68 ? "#10b981" : score >= 42 ? "#f59e0b" : "#ef4444";
+  const lbl = score >= 68 ? "Moderate" : score >= 42 ? "At Risk" : "Critical";
+  const r = 52, c = 2 * Math.PI * r, off = c - (score / 100) * c;
   return (
-    <div style={{ display:"flex",flexDirection:"column",alignItems:"center",gap:10 }}>
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
       <svg width={128} height={128} viewBox="0 0 128 128">
-        <circle cx={64} cy={64} r={r} fill="none" stroke="#1e2030" strokeWidth={10}/>
+        <circle cx={64} cy={64} r={r} fill="none" stroke="#1e2030" strokeWidth={10} />
         <circle cx={64} cy={64} r={r} fill="none" stroke={col} strokeWidth={10}
           strokeDasharray={c} strokeDashoffset={off} strokeLinecap="round"
-          transform="rotate(-90 64 64)" style={{ transition:"stroke-dashoffset 1.4s ease" }}/>
+          transform="rotate(-90 64 64)" style={{ transition: "stroke-dashoffset 1.4s ease" }} />
         <text x={64} y={60} textAnchor="middle" fill="#e8eaf0" fontSize={25} fontWeight={700} fontFamily="'JetBrains Mono',monospace">{score}</text>
         <text x={64} y={77} textAnchor="middle" fill={col} fontSize={12}>/100</text>
       </svg>
-      <span className={`pill ${score>=68?"pg":score>=42?"ph":"pc"}`} style={{ fontSize:13 }}>{lbl}</span>
+      <span className={`pill ${score >= 68 ? "pg" : score >= 42 ? "ph" : "pc"}`} style={{ fontSize: 13 }}>{lbl}</span>
     </div>
   );
 }
 
-function Stat({ label, value, sub, vc="#e8eaf0" }) {
+function Stat({ label, value, sub, vc = "#e8eaf0" }) {
   return (
-    <div className="card" style={{ padding:"18px 20px" }}>
-      <div style={{ fontSize:11,color:"#4a4d66",marginBottom:7,fontWeight:500,letterSpacing:"0.04em",textTransform:"uppercase" }}>{label}</div>
-      <div className="mono" style={{ fontSize:24,color:vc,marginBottom:4,fontWeight:500 }}>{value}</div>
-      {sub&&<div style={{ fontSize:12,color:"#4a4d66",lineHeight:1.5 }}>{sub}</div>}
+    <div className="card" style={{ padding: "18px 20px" }}>
+      <div style={{ fontSize: 11, color: "#4a4d66", marginBottom: 7, fontWeight: 500, letterSpacing: "0.04em", textTransform: "uppercase" }}>{label}</div>
+      <div className="mono" style={{ fontSize: 24, color: vc, marginBottom: 4, fontWeight: 500 }}>{value}</div>
+      {sub && <div style={{ fontSize: 12, color: "#4a4d66", lineHeight: 1.5 }}>{sub}</div>}
     </div>
   );
 }
 
 function Bar({ label, val, pct, color, note }) {
   return (
-    <div style={{ marginBottom:18 }}>
-      <div style={{ display:"flex",justifyContent:"space-between",alignItems:"baseline",marginBottom:6 }}>
-        <span style={{ fontSize:14,color:"#8b8fa8" }}>{label}</span>
-        <span className="mono" style={{ fontSize:14,color,fontWeight:500 }}>{val}</span>
+    <div style={{ marginBottom: 18 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 6 }}>
+        <span style={{ fontSize: 14, color: "#8b8fa8" }}>{label}</span>
+        <span className="mono" style={{ fontSize: 14, color, fontWeight: 500 }}>{val}</span>
       </div>
-      <div style={{ height:6,background:"#1e2030",borderRadius:4,overflow:"hidden" }}>
-        <div style={{ height:"100%",width:`${Math.min(pct,100)}%`,background:color,borderRadius:4,transition:"width 1.3s ease 0.2s" }}/>
+      <div style={{ height: 6, background: "#1e2030", borderRadius: 4, overflow: "hidden" }}>
+        <div style={{ height: "100%", width: `${Math.min(pct, 100)}%`, background: color, borderRadius: 4, transition: "width 1.3s ease 0.2s" }} />
       </div>
-      {note&&<div style={{ fontSize:12,color:"#3a3d55",marginTop:4 }}>{note}</div>}
+      {note && <div style={{ fontSize: 12, color: "#3a3d55", marginTop: 4 }}>{note}</div>}
     </div>
   );
 }
 
 function OppCard({ title, impact, priority, idx }) {
-  const pc = priority==="CRITICAL"?"pc":priority==="HIGH"?"ph":"pm";
+  const pc = priority === "CRITICAL" ? "pc" : priority === "HIGH" ? "ph" : "pm";
   return (
-    <div className="card" style={{ padding:"16px 20px",display:"flex",gap:16,alignItems:"flex-start",animation:"fadeUp .4s ease both",animationDelay:`${idx*0.07}s` }}>
-      <div style={{ flexShrink:0,paddingTop:2 }}><span className={`pill ${pc}`}>{priority}</span></div>
-      <div style={{ flex:1 }}>
-        <div style={{ fontWeight:600,fontSize:15,marginBottom:5,color:"#e8eaf0" }}>{title}</div>
-        <div style={{ fontSize:14,color:"#6b6f88",lineHeight:1.65 }}>{impact}</div>
+    <div className="card" style={{ padding: "16px 20px", display: "flex", gap: 16, alignItems: "flex-start", animation: "fadeUp .4s ease both", animationDelay: `${idx * 0.07}s` }}>
+      <div style={{ flexShrink: 0, paddingTop: 2 }}><span className={`pill ${pc}`}>{priority}</span></div>
+      <div style={{ flex: 1 }}>
+        <div style={{ fontWeight: 600, fontSize: 15, marginBottom: 5, color: "#e8eaf0" }}>{title}</div>
+        <div style={{ fontSize: 14, color: "#6b6f88", lineHeight: 1.65 }}>{impact}</div>
       </div>
     </div>
   );
 }
 
+// ── Report — updated prompt to use array fields ───────────────────────────────
 function Report({ fd, onRestart }) {
   const m = calc(fd);
-  const [aiTxt,setAiTxt] = useState("");
-  const [aiLoad,setAiLoad] = useState(true);
+  const [aiTxt, setAiTxt] = useState("");
+  const [aiLoad, setAiLoad] = useState(true);
 
-  useEffect(()=>{
-    const prompt=`You are a senior business analyst for a study abroad agency. Write a sharp, direct 5–6 sentence analysis using the exact numbers provided. No generic advice — every sentence must reference actual data.
+  useEffect(() => {
+    const followUpStr = m.followUpArr.length ? m.followUpArr.join(", ") : "none";
+    const docStr      = m.docArr.length      ? m.docArr.join(", ")      : "not specified";
+
+    const prompt = `You are a senior business analyst for a study abroad agency. Write a sharp, direct 5–6 sentence analysis using the exact numbers provided. No generic advice — every sentence must reference actual data.
 
 Agency data:
 - Monthly enquiries: ${m.leads}
-- Current conversion: ${m.conv}% → effective: ${m.effConv}% (${m.penalty?"30% penalty applied because response time is "+m.rt+" min":"no penalty"})
+- Current conversion: ${m.conv}% → effective: ${m.effConv}% (${m.penalty ? "30% penalty applied because response time is " + m.rt + " min" : "no penalty"})
 - Industry benchmark: 15%
 - Lost leads/month: ${m.lost}
 - Monthly revenue loss: ₹${m.mLoss.toLocaleString("en-IN")}
 - Annual revenue at risk: ₹${m.aLoss.toLocaleString("en-IN")}
 - Manual/repetitive work: ${m.manual}%
 - Weekly wasted counselor hours: ${m.wWaste} hrs
-- Follow-up method: ${fd.followUpMethod}
+- Follow-up methods used: ${followUpStr}
 - Lead drop-off stage: ${fd.dropOffStage}
-- CRM: ${fd.usesCRM}, Documents: ${fd.docHandling}
+- CRM: ${fd.usesCRM}, Document handling: ${docStr}
 - Lead quality: ${fd.leadQuality}
 - Audit score: ${m.score}/100
 
 Write 4 punchy paragraphs: (1) Biggest bottleneck + its rupee impact. (2) Why leads drop at "${fd.dropOffStage}" stage. (3) How response time + manual work compound the problem. (4) Top 2 AI fixes with estimated ROI. Use real numbers throughout.`;
 
-    (async()=>{
-      try{
-        const res=await fetch("/api/analyze",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({prompt})});
-        const data=await res.json();
-        const txt=data.text;
-        setAiTxt(txt||fallback());
-      }catch{ setAiTxt(fallback()); }
-      finally{ setAiLoad(false); }
+    (async () => {
+      try {
+        const res = await fetch("/api/analyze", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ prompt }) });
+        const data = await res.json();
+        setAiTxt(data.text || fallback());
+      } catch { setAiTxt(fallback()); }
+      finally { setAiLoad(false); }
     })();
-  },[]);
+  }, []);
 
-  const fallback=()=>`Your agency receives ${m.leads} leads per month but converts only ${m.effConv}% — that's ${(15-m.effConv).toFixed(1)}% below the 15% industry benchmark, costing you ${m.lost} students and ${inr(m.mLoss)} every single month. ${m.penalty?`Your ${m.rt}-minute response time is triggering a 30% conversion penalty — leads contacted after 10 minutes are statistically 7× harder to close, dropping your effective rate from ${m.conv}% to ${m.effConv}%.`:`While your response time is within range, the conversion gap alone represents ${inr(m.aLoss)} in annual lost revenue.`} On top of this, ${m.manual}% manual workload consumes ${m.wWaste} counselor hours per week — time that could be spent closing the ${m.lost} leads slipping away each month. Deploying an AI instant-response chatbot and automated WhatsApp follow-up sequences would be the two highest-ROI fixes: they address the response delay and the ${fd.dropOffStage} drop-off problem simultaneously, and agencies that have implemented them report recovering 40–60% of lost leads within 90 days.`;
+  const fallback = () => {
+    const followUpStr = m.followUpArr.includes("none") || m.followUpArr.length === 0
+      ? "no structured follow-up process"
+      : m.followUpArr.join(" + ");
+    return `Your agency receives ${m.leads} leads per month but converts only ${m.effConv}% — that's ${(15 - m.effConv).toFixed(1)}% below the 15% industry benchmark, costing you ${m.lost} students and ${inr(m.mLoss)} every single month. ${m.penalty ? `Your ${m.rt}-minute response time is triggering a 30% conversion penalty — leads contacted after 10 minutes are statistically 7× harder to close, dropping your effective rate from ${m.conv}% to ${m.effConv}%.` : `While your response time is within range, the conversion gap alone represents ${inr(m.aLoss)} in annual lost revenue.`} On top of this, ${m.manual}% manual workload consumes ${m.wWaste} counselor hours per week — time that could be spent closing the ${m.lost} leads slipping away each month. Your current follow-up approach (${followUpStr}) and the ${fd.dropOffStage} drop-off point are the two highest-leverage areas to fix with AI automation, with agencies reporting a 40–60% lead recovery rate within 90 days.`;
+  };
 
   const opps = [
     {
-      title:"AI Chatbot for Instant Lead Response",
-      impact:`Bring your ${m.rt}-minute response time to under 2 minutes — 24/7, even on weekends. Estimated recovery: ${Math.round(m.lost*0.35)} leads/month.`,
-      priority:m.rt>15?"CRITICAL":"HIGH",
+      title: "AI Chatbot for Instant Lead Response",
+      impact: `Bring your ${m.rt}-minute response time to under 2 minutes — 24/7, even on weekends. Estimated recovery: ${Math.round(m.lost * 0.35)} leads/month.`,
+      priority: m.rt > 15 ? "CRITICAL" : "HIGH",
     },
     {
-      title:"Automated WhatsApp Follow-up Sequences",
-      impact:`Replace your current follow-up with personalised, multi-step WhatsApp sequences. Directly addresses the ${fd.dropOffStage} drop-off problem.`,
-      priority:fd.followUpMethod==="none"||fd.followUpMethod==="manual"?"CRITICAL":"HIGH",
+      title: "Automated WhatsApp Follow-up Sequences",
+      impact: `Replace or augment your current follow-up (${m.followUpArr.length ? m.followUpArr.join(", ") : "none"}) with personalised, multi-step WhatsApp sequences. Directly addresses the ${fd.dropOffStage} drop-off problem.`,
+      priority: m.followUpArr.includes("none") || m.followUpArr.length === 0 ? "CRITICAL" : "HIGH",
     },
     {
-      title:fd.usesCRM==="no"?"CRM Setup + Lead Pipeline Tracking":"CRM Automation & Smart Workflows",
-      impact:fd.usesCRM==="no"
-        ?`No CRM means no visibility into where leads go silent. A properly configured CRM would save your ${m.counsel} counselor${m.counsel>1?"s":""} ~${Math.round(m.wWaste*0.35)} hours/week in manual tracking.`
-        :`Automate your existing CRM: auto-assign leads, send reminders at each follow-up stage, and generate weekly dashboards — cutting manual data entry by ~40%.`,
-      priority:fd.usesCRM==="no"?"HIGH":"MEDIUM",
+      title: fd.usesCRM === "no" ? "CRM Setup + Lead Pipeline Tracking" : "CRM Automation & Smart Workflows",
+      impact: fd.usesCRM === "no"
+        ? `No CRM means no visibility into where leads go silent. A properly configured CRM would save your ${m.counsel} counselor${m.counsel > 1 ? "s" : ""} ~${Math.round(m.wWaste * 0.35)} hours/week in manual tracking.`
+        : `Automate your existing CRM: auto-assign leads, send reminders at each follow-up stage, and generate weekly dashboards — cutting manual data entry by ~40%.`,
+      priority: fd.usesCRM === "no" ? "HIGH" : "MEDIUM",
     },
     {
-      title:"Document Processing Automation",
-      impact:fd.docHandling==="manual"
-        ?`Manual document collection adds 3–4 hours per student. An AI document portal reduces this to under 45 minutes, freeing ~${Math.round(m.wWaste*0.3)} counselor hours per month.`
-        :`Upgrade your semi-digital process with smart checklists and auto-verification — reducing errors by 70%.`,
-      priority:fd.docHandling==="manual"?"HIGH":"MEDIUM",
+      title: "Document Processing Automation",
+      impact: m.docArr.includes("manual") && !m.docArr.includes("digital")
+        ? `Manual document collection adds 3–4 hours per student. An AI document portal reduces this to under 45 minutes, freeing ~${Math.round(m.wWaste * 0.3)} counselor hours per month.`
+        : `Upgrade your current document process (${m.docArr.join(", ")}) with smart checklists and auto-verification — reducing errors by 70%.`,
+      priority: m.docArr.includes("manual") && !m.docArr.includes("digital") ? "HIGH" : "MEDIUM",
     },
   ];
 
-  const date = new Date().toLocaleDateString("en-IN",{day:"numeric",month:"long",year:"numeric"});
+  const date = new Date().toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" });
 
   return (
-    <div style={{ maxWidth:760,margin:"0 auto",padding:"84px 20px 80px" }}>
-      <div className="anim" style={{ marginBottom:32 }}>
+    <div style={{ maxWidth: 760, margin: "0 auto", padding: "84px 20px 80px" }}>
+      <div className="anim" style={{ marginBottom: 32 }}>
         <div className="slabel">EnrollmentX AI Audit Report · {date}</div>
-        <h1 style={{ fontSize:28,fontWeight:700,letterSpacing:"-0.03em",marginBottom:8 }}>Your Agency Audit Is Ready</h1>
-        <p style={{ color:"#6b6f88",fontSize:15 }}>
-          Based on <strong style={{ color:"#8b8fa8" }}>{m.leads} monthly leads</strong> · Revenue per student: <strong style={{ color:"#8b8fa8" }}>{inr(m.rps)}</strong>
+        <h1 style={{ fontSize: 28, fontWeight: 700, letterSpacing: "-0.03em", marginBottom: 8 }}>Your Agency Audit Is Ready</h1>
+        <p style={{ color: "#6b6f88", fontSize: 15 }}>
+          Based on <strong style={{ color: "#8b8fa8" }}>{m.leads} monthly leads</strong> · Revenue per student: <strong style={{ color: "#8b8fa8" }}>{inr(m.rps)}</strong>
         </p>
       </div>
 
-      <div className="card anim d1" style={{ display:"flex",gap:24,alignItems:"center",marginBottom:14,flexWrap:"wrap" }}>
+      <div className="card anim d1" style={{ display: "flex", gap: 24, alignItems: "center", marginBottom: 14, flexWrap: "wrap" }}>
         <Gauge score={m.score} />
-        <div style={{ flex:1,minWidth:220 }}>
+        <div style={{ flex: 1, minWidth: 220 }}>
           <div className="slabel">AI Efficiency Score</div>
-          <h2 style={{ fontSize:18,fontWeight:700,letterSpacing:"-0.02em",marginBottom:10 }}>
-            {m.score<42?"Critical inefficiencies — urgent action required":m.score<68?"Several revenue leaks found — moderate risk":"Good foundation, but revenue gaps remain"}
+          <h2 style={{ fontSize: 18, fontWeight: 700, letterSpacing: "-0.02em", marginBottom: 10 }}>
+            {m.score < 42 ? "Critical inefficiencies — urgent action required" : m.score < 68 ? "Several revenue leaks found — moderate risk" : "Good foundation, but revenue gaps remain"}
           </h2>
-          <p style={{ fontSize:14,color:"#6b6f88",lineHeight:1.75 }}>
-            Top-performing agencies score <strong style={{ color:"#e8eaf0" }}>75 or above</strong>.
-            Your score of <strong style={{ color:m.score<42?"#ef4444":m.score<68?"#f59e0b":"#10b981" }}>{m.score}/100</strong> indicates
-            {m.score<42?" multiple compounding problems actively reducing your revenue every day."
-              :m.score<68?" clear gaps in conversion, follow-up, and operations limiting your growth."
-              :" solid operations, with specific gaps holding back full potential."}
+          <p style={{ fontSize: 14, color: "#6b6f88", lineHeight: 1.75 }}>
+            Top-performing agencies score <strong style={{ color: "#e8eaf0" }}>75 or above</strong>.
+            Your score of <strong style={{ color: m.score < 42 ? "#ef4444" : m.score < 68 ? "#f59e0b" : "#10b981" }}>{m.score}/100</strong> indicates
+            {m.score < 42 ? " multiple compounding problems actively reducing your revenue every day."
+              : m.score < 68 ? " clear gaps in conversion, follow-up, and operations limiting your growth."
+                : " solid operations, with specific gaps holding back full potential."}
           </p>
         </div>
       </div>
 
-      <div style={{ marginBottom:14 }}>
+      <div style={{ marginBottom: 14 }}>
         <div className="slabel">What You're Losing — Financial Impact</div>
-        <div style={{ display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(155px,1fr))",gap:10 }}>
-          <Stat label="Monthly Revenue Loss"   value={inr(m.mLoss)}        sub={`${m.lost} unconverted leads × ${inr(m.rps)}`}                                                    vc="#ef4444" />
-          <Stat label="Annual Revenue at Risk" value={inr(m.aLoss)}        sub="Projected over 12 months if nothing changes"                                                        vc="#ef4444" />
-          <Stat label="Response Time Penalty"  value={m.penalty?inr(m.rtPenMoney):"None"} sub={m.penalty?`${m.rt}min response → 30% conversion loss`:`${m.rt}min — within safe range`} vc={m.penalty?"#f59e0b":"#10b981"} />
-          <Stat label="Ad Budget Wasted"       value={inr(m.adWasted)}     sub="Spent on leads that don't convert each month"                                                       vc="#f59e0b" />
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(155px,1fr))", gap: 10 }}>
+          <Stat label="Monthly Revenue Loss"   value={inr(m.mLoss)}        sub={`${m.lost} unconverted leads × ${inr(m.rps)}`}                                                      vc="#ef4444" />
+          <Stat label="Annual Revenue at Risk" value={inr(m.aLoss)}        sub="Projected over 12 months if nothing changes"                                                          vc="#ef4444" />
+          <Stat label="Response Time Penalty"  value={m.penalty ? inr(m.rtPenMoney) : "None"} sub={m.penalty ? `${m.rt}min response → 30% conversion loss` : `${m.rt}min — within safe range`} vc={m.penalty ? "#f59e0b" : "#10b981"} />
+          <Stat label="Ad Budget Wasted"       value={inr(m.adWasted)}     sub="Spent on leads that don't convert each month"                                                         vc="#f59e0b" />
         </div>
       </div>
 
-      <div className="card anim d2" style={{ marginBottom:14 }}>
+      <div className="card anim d2" style={{ marginBottom: 14 }}>
         <div className="slabel">Time & Operational Efficiency</div>
-        <div style={{ display:"grid",gridTemplateColumns:"1fr 1fr",gap:20,marginBottom:24 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20, marginBottom: 24 }}>
           <div>
-            <div style={{ fontSize:12,color:"#4a4d66",marginBottom:5 }}>Counselor hours wasted per week</div>
-            <div className="mono" style={{ fontSize:26,color:"#f59e0b",fontWeight:500 }}>{m.wWaste} hrs</div>
-            <div style={{ fontSize:12,color:"#3a3d55",marginTop:3 }}>Across {m.counsel} counselor{m.counsel>1?"s":""}</div>
+            <div style={{ fontSize: 12, color: "#4a4d66", marginBottom: 5 }}>Counselor hours wasted per week</div>
+            <div className="mono" style={{ fontSize: 26, color: "#f59e0b", fontWeight: 500 }}>{m.wWaste} hrs</div>
+            <div style={{ fontSize: 12, color: "#3a3d55", marginTop: 3 }}>Across {m.counsel} counselor{m.counsel > 1 ? "s" : ""}</div>
           </div>
           <div>
-            <div style={{ fontSize:12,color:"#4a4d66",marginBottom:5 }}>Monthly cost of manual inefficiency</div>
-            <div className="mono" style={{ fontSize:26,color:"#ef4444",fontWeight:500 }}>{inr(m.mWasteCost)}</div>
-            <div style={{ fontSize:12,color:"#3a3d55",marginTop:3 }}>At ₹200/hour labour cost</div>
+            <div style={{ fontSize: 12, color: "#4a4d66", marginBottom: 5 }}>Monthly cost of manual inefficiency</div>
+            <div className="mono" style={{ fontSize: 26, color: "#ef4444", fontWeight: 500 }}>{inr(m.mWasteCost)}</div>
+            <div style={{ fontSize: 12, color: "#3a3d55", marginTop: 3 }}>At ₹200/hour labour cost</div>
           </div>
         </div>
-        <Bar label="Conversion rate vs. 15% benchmark" val={`${m.effConv}% / 15%`} pct={(m.effConv/15)*100} color={m.effConv<8?"#ef4444":"#f59e0b"}
-          note={`You are ${(15-m.effConv).toFixed(1)}% below benchmark — that gap equals ${m.lost} missed enrollments per month`} />
-        <Bar label="Proportion of work that is manual / repetitive" val={`${m.manual}%`} pct={m.manual} color={m.manual>60?"#ef4444":m.manual>30?"#f59e0b":"#10b981"}
-          note={m.manual>50?"High manual load is consuming time that should be spent on lead conversion.":"Some manual work exists — targeted automation can clear this."} />
-        <Bar label="Lead response speed (target: under 10 minutes)" val={`${m.rt} min`} pct={Math.min(100,(10/Math.max(m.rt,1))*100)} color={m.rt<=10?"#10b981":"#ef4444"}
-          note={m.rt>10?`${m.rt-10} minutes above the safe threshold. Actively reducing your conversion from ${m.conv}% to ${m.effConv}%.`:"Your response time is optimal."} />
+        <Bar label="Conversion rate vs. 15% benchmark" val={`${m.effConv}% / 15%`} pct={(m.effConv / 15) * 100} color={m.effConv < 8 ? "#ef4444" : "#f59e0b"}
+          note={`You are ${(15 - m.effConv).toFixed(1)}% below benchmark — that gap equals ${m.lost} missed enrollments per month`} />
+        <Bar label="Proportion of work that is manual / repetitive" val={`${m.manual}%`} pct={m.manual} color={m.manual > 60 ? "#ef4444" : m.manual > 30 ? "#f59e0b" : "#10b981"}
+          note={m.manual > 50 ? "High manual load is consuming time that should be spent on lead conversion." : "Some manual work exists — targeted automation can clear this."} />
+        <Bar label="Lead response speed (target: under 10 minutes)" val={`${m.rt} min`} pct={Math.min(100, (10 / Math.max(m.rt, 1)) * 100)} color={m.rt <= 10 ? "#10b981" : "#ef4444"}
+          note={m.rt > 10 ? `${m.rt - 10} minutes above the safe threshold. Actively reducing your conversion from ${m.conv}% to ${m.effConv}%.` : "Your response time is optimal."} />
       </div>
 
-      <div className="card-blue anim d3" style={{ marginBottom:14 }}>
-        <div style={{ display:"flex",gap:12,alignItems:"center",marginBottom:14 }}>
-          <div style={{ width:34,height:34,borderRadius:9,background:"rgba(94,96,255,0.14)",border:"1px solid rgba(94,96,255,0.28)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:17,flexShrink:0 }}>◈</div>
+      <div className="card-blue anim d3" style={{ marginBottom: 14 }}>
+        <div style={{ display: "flex", gap: 12, alignItems: "center", marginBottom: 14 }}>
+          <div style={{ width: 34, height: 34, borderRadius: 9, background: "rgba(94,96,255,0.14)", border: "1px solid rgba(94,96,255,0.28)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 17, flexShrink: 0 }}>◈</div>
           <div>
-            <div style={{ fontWeight:600,fontSize:15,color:"#e8eaf0" }}>AI Bottleneck Analysis</div>
-            <div style={{ fontSize:12,color:"#6b6f88" }}>Powered by EnrollmentX AI · Generated from your specific data</div>
+            <div style={{ fontWeight: 600, fontSize: 15, color: "#e8eaf0" }}>AI Bottleneck Analysis</div>
+            <div style={{ fontSize: 12, color: "#6b6f88" }}>Powered by EnrollmentX AI · Generated from your specific data</div>
           </div>
         </div>
         {aiLoad ? (
-          <div style={{ display:"flex",alignItems:"center",gap:12,color:"#6b6f88",fontSize:14,padding:"8px 0" }}>
-            <div className="spinner"/>
+          <div style={{ display: "flex", alignItems: "center", gap: 12, color: "#6b6f88", fontSize: 14, padding: "8px 0" }}>
+            <div className="spinner" />
             <span>Analysing your data with AI — takes a few seconds…</span>
           </div>
         ) : (
-          <div style={{ fontSize:15,color:"#8b8fa8",lineHeight:1.85,whiteSpace:"pre-wrap" }}>{aiTxt}</div>
+          <div style={{ fontSize: 15, color: "#8b8fa8", lineHeight: 1.85, whiteSpace: "pre-wrap" }}>{aiTxt}</div>
         )}
       </div>
 
-      <div style={{ marginBottom:14 }}>
+      <div style={{ marginBottom: 14 }}>
         <div className="slabel">AI Automation Opportunities — Ranked by ROI Impact</div>
-        <div style={{ display:"flex",flexDirection:"column",gap:10 }}>
-          {opps.map((o,i)=><OppCard key={i} {...o} idx={i}/>)}
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          {opps.map((o, i) => <OppCard key={i} {...o} idx={i} />)}
         </div>
       </div>
 
-      <div className="card-blue anim" style={{ marginBottom:24 }}>
+      <div className="card-blue anim" style={{ marginBottom: 24 }}>
         <div className="slabel">Your Growth Potential</div>
-        <div style={{ display:"flex",alignItems:"baseline",gap:12,flexWrap:"wrap",marginBottom:14 }}>
-          <div className="mono" style={{ fontSize:40,color:"#10b981",fontWeight:700 }}>+{Math.min(m.growthPct,150)}%</div>
-          <div style={{ fontSize:16,color:"#6b6f88" }}>potential revenue increase</div>
+        <div style={{ display: "flex", alignItems: "baseline", gap: 12, flexWrap: "wrap", marginBottom: 14 }}>
+          <div className="mono" style={{ fontSize: 40, color: "#10b981", fontWeight: 700 }}>+{Math.min(m.growthPct, 150)}%</div>
+          <div style={{ fontSize: 16, color: "#6b6f88" }}>potential revenue increase</div>
         </div>
-        <p style={{ fontSize:15,color:"#8b8fa8",lineHeight:1.8 }}>
+        <p style={{ fontSize: 15, color: "#8b8fa8", lineHeight: 1.8 }}>
           If your agency reaches the 15% conversion benchmark from your current {m.effConv}%, you would enroll{" "}
-          <strong style={{ color:"#e8eaf0" }}>{m.lost} additional students per month</strong>. At {inr(m.rps)} per student, that is{" "}
-          <strong style={{ color:"#10b981" }}>{inr(m.mLoss)}/month</strong> in recovered revenue, or{" "}
-          <strong style={{ color:"#10b981" }}>{inr(m.aLoss)} per year</strong> — without spending a single extra rupee on advertising.
+          <strong style={{ color: "#e8eaf0" }}>{m.lost} additional students per month</strong>. At {inr(m.rps)} per student, that is{" "}
+          <strong style={{ color: "#10b981" }}>{inr(m.mLoss)}/month</strong> in recovered revenue, or{" "}
+          <strong style={{ color: "#10b981" }}>{inr(m.aLoss)} per year</strong> — without spending a single extra rupee on advertising.
         </p>
       </div>
 
-      <div style={{ background:"#0f1017",border:"1px solid #1e2030",borderRadius:18,padding:"48px 32px",textAlign:"center" }}>
-        <div style={{ fontSize:11,fontWeight:600,letterSpacing:"0.1em",textTransform:"uppercase",color:"#5E60FF",marginBottom:16 }}>Ready to fix this?</div>
-        <h2 style={{ fontSize:26,fontWeight:700,letterSpacing:"-0.025em",marginBottom:12 }}>
+      <div style={{ background: "#0f1017", border: "1px solid #1e2030", borderRadius: 18, padding: "48px 32px", textAlign: "center" }}>
+        <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "#5E60FF", marginBottom: 16 }}>Ready to fix this?</div>
+        <h2 style={{ fontSize: 26, fontWeight: 700, letterSpacing: "-0.025em", marginBottom: 12 }}>
           Recover {inr(m.mLoss)}/month<br />with AI — in 30 days
         </h2>
-        <p style={{ color:"#6b6f88",fontSize:15,maxWidth:400,margin:"0 auto 36px",lineHeight:1.75 }}>
+        <p style={{ color: "#6b6f88", fontSize: 15, maxWidth: 400, margin: "0 auto 36px", lineHeight: 1.75 }}>
           Our team will build and deploy a custom AI system for your agency — lead chatbot, WhatsApp automation, CRM workflows — all tailored to how you work.
         </p>
-        <div style={{ display:"flex",gap:12,justifyContent:"center",flexWrap:"wrap" }}>
-          <button className="btn bcta" onClick={()=>window.open("https://calendly.com/charanrathod-inf/30min","_blank")}>
+        <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
+          <button className="btn bcta" onClick={() => window.open("https://calendly.com/charanrathod-inf/30min", "_blank")}>
             Book a Free Strategy Call →
           </button>
           <button className="btn bo" onClick={onRestart}>Run Another Audit</button>
         </div>
-        <p style={{ fontSize:12,color:"#2e3050",marginTop:20 }}>No commitment · 30-minute call · EnrollmentX specialists</p>
+        <p style={{ fontSize: 12, color: "#2e3050", marginTop: 20 }}>No commitment · 30-minute call · EnrollmentX specialists</p>
       </div>
     </div>
   );
 }
 
+// ── LeadCapture (unchanged) ───────────────────────────────────────────────────
 function LeadCapture({ formData, onSubmit }) {
   const [mode, setMode] = useState("choose");
-  const [lead, setLead] = useState({ name:"", email:"", phone:"", agency:"" });
+  const [lead, setLead] = useState({ name: "", email: "", phone: "", agency: "" });
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState({});
-  const upd = (k,v) => { setLead(p=>({...p,[k]:v})); setErrors(e=>({...e,[k]:""})); };
+  const upd = (k, v) => { setLead(p => ({ ...p, [k]: v })); setErrors(e => ({ ...e, [k]: "" })); };
 
-  // Calculate a teaser score to show blurred
   const teaserScore = (() => {
     const m = calc(formData || {});
     return { score: m.score, mLoss: m.mLoss, lost: m.lost };
@@ -673,7 +786,7 @@ function LeadCapture({ formData, onSubmit }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ lead: ld, formData }),
       });
-    } catch(e) {}
+    } catch (e) { }
     onSubmit(ld);
   };
 
@@ -701,97 +814,86 @@ function LeadCapture({ formData, onSubmit }) {
   };
 
   if (mode === "choose") return (
-    <div style={{ minHeight:"100vh", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", padding:"84px 20px 60px", position:"relative", overflow:"hidden", background:"#08090e" }}>
-      {/* Background glow */}
-      <div style={{ position:"absolute", top:"10%", left:"50%", transform:"translateX(-50%)", width:800, height:400, background:"radial-gradient(ellipse,rgba(94,96,255,0.07) 0%,transparent 70%)", pointerEvents:"none" }} />
+    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "84px 20px 60px", position: "relative", overflow: "hidden", background: "#08090e" }}>
+      <div style={{ position: "absolute", top: "10%", left: "50%", transform: "translateX(-50%)", width: 800, height: 400, background: "radial-gradient(ellipse,rgba(94,96,255,0.07) 0%,transparent 70%)", pointerEvents: "none" }} />
 
-      <div style={{ width:"100%", maxWidth:520, position:"relative" }}>
-
-        {/* Blurred score preview — teaser */}
-        <div className="anim" style={{ position:"relative", marginBottom:20, borderRadius:16, overflow:"hidden", border:"1px solid rgba(94,96,255,0.2)" }}>
-          {/* Blurred report preview */}
-          <div style={{ filter:"blur(6px)", pointerEvents:"none", userSelect:"none", background:"#0f1017", padding:"20px 24px", display:"flex", gap:20, alignItems:"center", flexWrap:"wrap" }}>
-            <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:6 }}>
+      <div style={{ width: "100%", maxWidth: 520, position: "relative" }}>
+        <div className="anim" style={{ position: "relative", marginBottom: 20, borderRadius: 16, overflow: "hidden", border: "1px solid rgba(94,96,255,0.2)" }}>
+          <div style={{ filter: "blur(6px)", pointerEvents: "none", userSelect: "none", background: "#0f1017", padding: "20px 24px", display: "flex", gap: 20, alignItems: "center", flexWrap: "wrap" }}>
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
               <svg width={80} height={80} viewBox="0 0 128 128">
-                <circle cx={64} cy={64} r={52} fill="none" stroke="#1e2030" strokeWidth={10}/>
+                <circle cx={64} cy={64} r={52} fill="none" stroke="#1e2030" strokeWidth={10} />
                 <circle cx={64} cy={64} r={52} fill="none" stroke={teaserScore.score < 42 ? "#ef4444" : "#f59e0b"} strokeWidth={10}
-                  strokeDasharray={2*Math.PI*52} strokeDashoffset={2*Math.PI*52 - (teaserScore.score/100)*2*Math.PI*52}
-                  strokeLinecap="round" transform="rotate(-90 64 64)"/>
+                  strokeDasharray={2 * Math.PI * 52} strokeDashoffset={2 * Math.PI * 52 - (teaserScore.score / 100) * 2 * Math.PI * 52}
+                  strokeLinecap="round" transform="rotate(-90 64 64)" />
                 <text x={64} y={60} textAnchor="middle" fill="#e8eaf0" fontSize={28} fontWeight={700} fontFamily="monospace">{teaserScore.score}</text>
                 <text x={64} y={76} textAnchor="middle" fill="#6b6f88" fontSize={13}>/100</text>
               </svg>
             </div>
-            <div style={{ flex:1, minWidth:160 }}>
-              <div style={{ fontSize:12, color:"#4a4d66", marginBottom:4, textTransform:"uppercase", letterSpacing:"0.08em" }}>Monthly Revenue Loss</div>
-              <div style={{ fontSize:28, fontWeight:700, color:"#ef4444", fontFamily:"monospace" }}>{inr(teaserScore.mLoss)}</div>
-              <div style={{ fontSize:12, color:"#4a4d66", marginTop:4 }}>{teaserScore.lost} leads slipping away each month</div>
+            <div style={{ flex: 1, minWidth: 160 }}>
+              <div style={{ fontSize: 12, color: "#4a4d66", marginBottom: 4, textTransform: "uppercase", letterSpacing: "0.08em" }}>Monthly Revenue Loss</div>
+              <div style={{ fontSize: 28, fontWeight: 700, color: "#ef4444", fontFamily: "monospace" }}>{inr(teaserScore.mLoss)}</div>
+              <div style={{ fontSize: 12, color: "#4a4d66", marginTop: 4 }}>{teaserScore.lost} leads slipping away each month</div>
             </div>
-            <div style={{ flex:1, minWidth:160 }}>
-              <div style={{ fontSize:12, color:"#4a4d66", marginBottom:8, textTransform:"uppercase", letterSpacing:"0.08em" }}>Top Issues Found</div>
-              {["Response time penalty", "Conversion gap", "Manual work waste"].map((i,idx) => (
-                <div key={idx} style={{ display:"flex", alignItems:"center", gap:8, marginBottom:6 }}>
-                  <div style={{ width:6, height:6, borderRadius:"50%", background:"#ef4444", flexShrink:0 }} />
-                  <div style={{ fontSize:13, color:"#6b6f88" }}>{i}</div>
+            <div style={{ flex: 1, minWidth: 160 }}>
+              <div style={{ fontSize: 12, color: "#4a4d66", marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.08em" }}>Top Issues Found</div>
+              {["Response time penalty", "Conversion gap", "Manual work waste"].map((i, idx) => (
+                <div key={idx} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+                  <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#ef4444", flexShrink: 0 }} />
+                  <div style={{ fontSize: 13, color: "#6b6f88" }}>{i}</div>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Lock overlay */}
-          <div style={{ position:"absolute", inset:0, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", background:"rgba(8,9,14,0.72)", backdropFilter:"blur(1px)", gap:10 }}>
-            <div style={{ width:40, height:40, borderRadius:12, background:"rgba(94,96,255,0.15)", border:"1px solid rgba(94,96,255,0.3)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:18 }}>🔒</div>
-            <div style={{ fontSize:14, fontWeight:600, color:"#e8eaf0" }}>Your report is ready</div>
-            <div style={{ fontSize:13, color:"#6b6f88" }}>Sign in to unlock your full audit</div>
+          <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", background: "rgba(8,9,14,0.72)", backdropFilter: "blur(1px)", gap: 10 }}>
+            <div style={{ width: 40, height: 40, borderRadius: 12, background: "rgba(94,96,255,0.15)", border: "1px solid rgba(94,96,255,0.3)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>🔒</div>
+            <div style={{ fontSize: 14, fontWeight: 600, color: "#e8eaf0" }}>Your report is ready</div>
+            <div style={{ fontSize: 13, color: "#6b6f88" }}>Sign in to unlock your full audit</div>
           </div>
         </div>
 
-        {/* Urgency strip */}
-        <div className="anim d1" style={{ background:"rgba(239,68,68,0.06)", border:"1px solid rgba(239,68,68,0.15)", borderRadius:10, padding:"10px 16px", marginBottom:20, display:"flex", alignItems:"center", gap:10 }}>
-          <span style={{ fontSize:16 }}>⚠️</span>
-          <span style={{ fontSize:13, color:"#f87171", lineHeight:1.5 }}>
+        <div className="anim d1" style={{ background: "rgba(239,68,68,0.06)", border: "1px solid rgba(239,68,68,0.15)", borderRadius: 10, padding: "10px 16px", marginBottom: 20, display: "flex", alignItems: "center", gap: 10 }}>
+          <span style={{ fontSize: 16 }}>⚠️</span>
+          <span style={{ fontSize: 13, color: "#f87171", lineHeight: 1.5 }}>
             Your agency is losing <strong>{inr(teaserScore.mLoss)}/month</strong> right now. Sign in to see the full breakdown and fix plan.
           </span>
         </div>
 
-        {/* Sign in card */}
-        <div className="card anim d2" style={{ padding:"28px" }}>
-          <div style={{ textAlign:"center", marginBottom:24 }}>
-            <h2 style={{ fontSize:20, fontWeight:700, letterSpacing:"-0.025em", marginBottom:6 }}>Unlock your free audit report</h2>
-            <p style={{ fontSize:13, color:"#6b6f88", lineHeight:1.65 }}>
-              Takes 5 seconds · No credit card · 100% free
-            </p>
+        <div className="card anim d2" style={{ padding: "28px" }}>
+          <div style={{ textAlign: "center", marginBottom: 24 }}>
+            <h2 style={{ fontSize: 20, fontWeight: 700, letterSpacing: "-0.025em", marginBottom: 6 }}>Unlock your free audit report</h2>
+            <p style={{ fontSize: 13, color: "#6b6f88", lineHeight: 1.65 }}>Takes 5 seconds · No credit card · 100% free</p>
           </div>
 
-          {/* Google — dominant CTA */}
           <button
             onClick={handleGoogle}
-            style={{ width:"100%", background:"#fff", color:"#1f2937", border:"none", borderRadius:10, padding:"14px 20px", fontSize:15, fontWeight:600, cursor:"pointer", fontFamily:"inherit", display:"flex", alignItems:"center", justifyContent:"center", gap:12, transition:"all .18s", marginBottom:12, boxShadow:"0 2px 12px rgba(0,0,0,0.3)" }}
-            onMouseEnter={e=>{ e.currentTarget.style.transform="translateY(-1px)"; e.currentTarget.style.boxShadow="0 6px 20px rgba(0,0,0,0.4)"; }}
-            onMouseLeave={e=>{ e.currentTarget.style.transform="translateY(0)"; e.currentTarget.style.boxShadow="0 2px 12px rgba(0,0,0,0.3)"; }}
+            style={{ width: "100%", background: "#fff", color: "#1f2937", border: "none", borderRadius: 10, padding: "14px 20px", fontSize: 15, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", justifyContent: "center", gap: 12, transition: "all .18s", marginBottom: 12, boxShadow: "0 2px 12px rgba(0,0,0,0.3)" }}
+            onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-1px)"; e.currentTarget.style.boxShadow = "0 6px 20px rgba(0,0,0,0.4)"; }}
+            onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 2px 12px rgba(0,0,0,0.3)"; }}
           >
             <svg width="18" height="18" viewBox="0 0 24 24">
-              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/>
-              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.47 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" />
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.47 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
             </svg>
             Continue with Google — it's free
           </button>
 
-          <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:12 }}>
-            <div style={{ flex:1, height:"1px", background:"#1e2030" }} />
-            <span style={{ fontSize:12, color:"#3a3d55", fontWeight:500 }}>or</span>
-            <div style={{ flex:1, height:"1px", background:"#1e2030" }} />
+          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
+            <div style={{ flex: 1, height: "1px", background: "#1e2030" }} />
+            <span style={{ fontSize: 12, color: "#3a3d55", fontWeight: 500 }}>or</span>
+            <div style={{ flex: 1, height: "1px", background: "#1e2030" }} />
           </div>
 
-          <button className="btn bo" style={{ width:"100%", fontSize:13, padding:"11px 0", color:"#4a4d66" }} onClick={() => setMode("manual")}>
+          <button className="btn bo" style={{ width: "100%", fontSize: 13, padding: "11px 0", color: "#4a4d66" }} onClick={() => setMode("manual")}>
             Enter details manually
           </button>
 
-          {/* Trust signals */}
-          <div style={{ display:"flex", justifyContent:"center", gap:20, marginTop:18, flexWrap:"wrap" }}>
-            {["🔒 No spam", "✓ Free forever", "📧 Report sent to email"].map((t,i) => (
-              <span key={i} style={{ fontSize:11, color:"#3a3d55" }}>{t}</span>
+          <div style={{ display: "flex", justifyContent: "center", gap: 20, marginTop: 18, flexWrap: "wrap" }}>
+            {["🔒 No spam", "✓ Free forever", "📧 Report sent to email"].map((t, i) => (
+              <span key={i} style={{ fontSize: 11, color: "#3a3d55" }}>{t}</span>
             ))}
           </div>
         </div>
@@ -799,38 +901,37 @@ function LeadCapture({ formData, onSubmit }) {
     </div>
   );
 
-  // Manual form
   return (
-    <div style={{ minHeight:"100vh", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", padding:"84px 20px 60px" }}>
-      <div style={{ width:"100%", maxWidth:460 }}>
-        <button className="btn bo" style={{ fontSize:13, padding:"7px 14px", marginBottom:20 }} onClick={()=>setMode("choose")}>← Back</button>
-        <div className="card anim" style={{ padding:"28px" }}>
-          <div style={{ marginBottom:24 }}>
-            <h2 style={{ fontSize:21, fontWeight:700, letterSpacing:"-0.02em", marginBottom:6 }}>Your details</h2>
-            <p style={{ fontSize:14, color:"#6b6f88" }}>We'll send your full audit report to your email.</p>
+    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "84px 20px 60px" }}>
+      <div style={{ width: "100%", maxWidth: 460 }}>
+        <button className="btn bo" style={{ fontSize: 13, padding: "7px 14px", marginBottom: 20 }} onClick={() => setMode("choose")}>← Back</button>
+        <div className="card anim" style={{ padding: "28px" }}>
+          <div style={{ marginBottom: 24 }}>
+            <h2 style={{ fontSize: 21, fontWeight: 700, letterSpacing: "-0.02em", marginBottom: 6 }}>Your details</h2>
+            <p style={{ fontSize: 14, color: "#6b6f88" }}>We'll send your full audit report to your email.</p>
           </div>
           <div className="field">
-            <label className="fl">Full Name <span style={{ color:"#ef4444", fontSize:12 }}>*</span></label>
-            <input type="text" placeholder="e.g. Rahul Sharma" value={lead.name} onChange={e=>upd("name",e.target.value)} style={{ borderColor: errors.name ? "#ef4444" : undefined }} />
-            {errors.name && <div style={{ fontSize:12, color:"#ef4444", marginTop:4 }}>{errors.name}</div>}
+            <label className="fl">Full Name <span style={{ color: "#ef4444", fontSize: 12 }}>*</span></label>
+            <input type="text" placeholder="e.g. Rahul Sharma" value={lead.name} onChange={e => upd("name", e.target.value)} style={{ borderColor: errors.name ? "#ef4444" : undefined }} />
+            {errors.name && <div style={{ fontSize: 12, color: "#ef4444", marginTop: 4 }}>{errors.name}</div>}
           </div>
           <div className="field">
-            <label className="fl">Work Email <span style={{ color:"#ef4444", fontSize:12 }}>*</span></label>
-            <input type="text" placeholder="e.g. rahul@agency.com" value={lead.email} onChange={e=>upd("email",e.target.value)} style={{ borderColor: errors.email ? "#ef4444" : undefined }} />
-            {errors.email && <div style={{ fontSize:12, color:"#ef4444", marginTop:4 }}>{errors.email}</div>}
+            <label className="fl">Work Email <span style={{ color: "#ef4444", fontSize: 12 }}>*</span></label>
+            <input type="text" placeholder="e.g. rahul@agency.com" value={lead.email} onChange={e => upd("email", e.target.value)} style={{ borderColor: errors.email ? "#ef4444" : undefined }} />
+            {errors.email && <div style={{ fontSize: 12, color: "#ef4444", marginTop: 4 }}>{errors.email}</div>}
           </div>
           <div className="field">
-            <label className="fl">Agency Name <span style={{ color:"#4a4d66", fontWeight:400, fontSize:12 }}>— optional</span></label>
-            <input type="text" placeholder="e.g. Global Study Consultants" value={lead.agency} onChange={e=>upd("agency",e.target.value)} />
+            <label className="fl">Agency Name <span style={{ color: "#4a4d66", fontWeight: 400, fontSize: 12 }}>— optional</span></label>
+            <input type="text" placeholder="e.g. Global Study Consultants" value={lead.agency} onChange={e => upd("agency", e.target.value)} />
           </div>
           <div className="field">
-            <label className="fl">Phone Number <span style={{ color:"#4a4d66", fontWeight:400, fontSize:12 }}>— optional</span></label>
-            <input type="text" placeholder="e.g. +91 98765 43210" value={lead.phone} onChange={e=>upd("phone",e.target.value)} />
+            <label className="fl">Phone Number <span style={{ color: "#4a4d66", fontWeight: 400, fontSize: 12 }}>— optional</span></label>
+            <input type="text" placeholder="e.g. +91 98765 43210" value={lead.phone} onChange={e => upd("phone", e.target.value)} />
           </div>
-          <button className="btn bp" style={{ width:"100%", fontSize:15, padding:"13px 0", opacity:submitting?0.7:1, marginTop:4 }} onClick={handleManual} disabled={submitting}>
+          <button className="btn bp" style={{ width: "100%", fontSize: 15, padding: "13px 0", opacity: submitting ? 0.7 : 1, marginTop: 4 }} onClick={handleManual} disabled={submitting}>
             {submitting ? "Saving…" : "View My Audit Report →"}
           </button>
-          <p style={{ fontSize:11, color:"#2e3050", textAlign:"center", marginTop:14, lineHeight:1.6 }}>
+          <p style={{ fontSize: 11, color: "#2e3050", textAlign: "center", marginTop: 14, lineHeight: 1.6 }}>
             🔒 No spam. Your details are used only to deliver your report.
           </p>
         </div>
@@ -885,11 +986,11 @@ export default function App() {
     <>
       <style>{G}</style>
       <Nav user={user} onSignOut={signOut} />
-      {screen==="landing"   && <Landing onStart={()=>setScreen("form")}/>}
-      {screen==="form"      && <AuditForm onSubmit={submitForm}/>}
-      {screen==="capture"   && <LeadCapture formData={fd} onSubmit={submitLead}/>}
-      {screen==="analyzing" && <Analyzing/>}
-      {screen==="report"    && <Report fd={fd} lead={lead} onRestart={restart}/>}
+      {screen === "landing"   && <Landing onStart={() => setScreen("form")} />}
+      {screen === "form"      && <AuditForm onSubmit={submitForm} />}
+      {screen === "capture"   && <LeadCapture formData={fd} onSubmit={submitLead} />}
+      {screen === "analyzing" && <Analyzing />}
+      {screen === "report"    && <Report fd={fd} lead={lead} onRestart={restart} />}
     </>
   );
 }
