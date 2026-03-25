@@ -604,7 +604,16 @@ Write 4 punchy paragraphs: (1) Biggest bottleneck + its rupee impact. (2) Why le
 
     (async () => {
       try {
-        const res = await fetch("/api/analyze", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ prompt }) });
+        const res = await fetch("/api/analyze", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    prompt,
+    businessName: lead?.agency || "",   // from LeadCapture's "Agency Name" field
+    email: lead?.email || "",
+    score: m.score,
+  }),
+});
         const data = await res.json();
         setAiTxt(data.text || fallback());
       } catch { setAiTxt(fallback()); }
