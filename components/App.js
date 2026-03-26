@@ -975,20 +975,30 @@ export default function App() {
         setUser(session.user);
         const params = new URLSearchParams(window.location.search);
         if (params.get("audit") === "true") {
-          const saved = sessionStorage.getItem("audit_fd");
-          if (saved) {
-            const restoredFd = JSON.parse(saved);
-            sessionStorage.removeItem("audit_fd");
-            setFd(restoredFd);
-            const profile = {
-              name: session.user.user_metadata?.full_name || "",
-              email: session.user.email || "",
-            };
-            setLead(profile);
-            setScreen("analyzing");
-            setTimeout(() => setScreen("report"), 5800);
-          }
-        }
+  const saved = sessionStorage.getItem("audit_fd");
+  if (saved) {
+    const restoredFd = JSON.parse(saved);
+    sessionStorage.removeItem("audit_fd");
+    setFd(restoredFd);
+    const profile = {
+      name: session.user.user_metadata?.full_name || "",
+      email: session.user.email || "",
+      phone: session.user.user_metadata?.phone || "",
+      agency: "",
+    };
+    setLead(profile);
+
+    // ✅ Save Google auth user to audit_leads immediately
+    fetch("/api/capture", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ lead: profile, formData: restoredFd }),
+    }).catch(() => {});
+
+    setScreen("analyzing");
+    setTimeout(() => setScreen("report"), 5800);
+  }
+}
       }
     });
 
