@@ -27,40 +27,62 @@ function calcMetrics(d) {
 
 // ── Supabase ──────────────────────────────────────────────────────────────────
 async function saveToSupabase(lead, formData, metrics) {
-  const url  = process.env.SUPABASE_URL;
-  const key  = process.env.SUPABASE_SERVICE_KEY;
-  if (!url || !key) return;
+  const url = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_KEY;
+  if (!url || !key) return null;
 
-  await fetch(`${url}/rest/v1/audit_leads`, {
+  const res = await fetch(`${url}/rest/v1/audit_leads`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       "apikey": key,
       "Authorization": `Bearer ${key}`,
-      "Prefer": "return=minimal",
+      "Prefer": "return=representation",  // ← returns the inserted row with its id
     },
     body: JSON.stringify({
-      name:          lead.name   || null,
-      email:         lead.email  || null,
-      phone:         lead.phone  || null,
-      agency_name:   lead.agency || null,
-      monthly_leads:    formData.monthlyLeads,
-      conversion_rate:  formData.conversionRate,
-      response_time:    formData.responseTime,
-      manual_work_pct:  formData.manualWorkPct,
-      ad_spend:         formData.adSpend,
-      follow_up_method: formData.followUpMethod,
-      drop_off_stage:   formData.dropOffStage,
-      uses_crm:         formData.usesCRM,
-      doc_handling:     formData.docHandling,
-      lead_quality:     formData.leadQuality,
-      revenue_per_student: formData.revenuePerStudent || 150000,
-      audit_score:      metrics.score,
-      monthly_rev_loss: metrics.mLoss,
-      annual_rev_loss:  metrics.aLoss,
-      created_at:       new Date().toISOString(),
+      name:               lead.name   || null,
+      email:              lead.email  || null,
+      phone:              lead.phone  || null,
+      agency_name:        lead.agency || null,
+
+      // All form answers
+      monthly_leads:          formData.monthlyLeads,
+      conversion_rate:        formData.conversionRate,
+      response_time:          formData.responseTime,
+      manual_work_pct:        formData.manualWorkPct,
+      ad_spend:               formData.adSpend,
+      follow_up_method:       Array.isArray(formData.followUpMethod)
+                                ? formData.followUpMethod.join(", ")
+                                : formData.followUpMethod,
+      follow_up_count:        formData.followUpCount        || null,
+      drop_off_stage:         formData.dropOffStage,
+      uses_crm:               formData.usesCRM,
+      doc_handling:           Array.isArray(formData.docHandling)
+                                ? formData.docHandling.join(", ")
+                                : formData.docHandling,
+      lead_quality:           formData.leadQuality,
+      lead_source:            Array.isArray(formData.leadSource)
+                                ? formData.leadSource.join(", ")
+                                : formData.leadSource,
+      counselors:             formData.counselors            || null,
+      time_per_lead:          formData.timePerLead           || null,
+      cost_per_lead:          formData.costPerLead           || null,
+      revenue_per_student:    formData.revenuePerStudent     || 150000,
+
+      // Calculated metrics
+      audit_score:            metrics.score,
+      monthly_rev_loss:       metrics.mLoss,
+      annual_rev_loss:        metrics.aLoss,
+      effective_conversion:   metrics.effConv,
+      lost_leads:             metrics.lost,
+      weekly_wasted_hours:    metrics.wWaste,
+      monthly_waste_cost:     metrics.mWasteCost,
+      growth_potential_pct:   metrics.growthPct,
     }),
   });
+
+  const rows = await res.json();
+  return rows?.[0]?.id || null;  // return the row id so we can update it later
 }
 
 // ── Google Sheets ─────────────────────────────────────────────────────────────
@@ -208,17 +230,32 @@ async function sendEmailNotification(lead, formData, metrics) {
 // ── Main handler ──────────────────────────────────────────────────────────────
 export async function POST(req) {
   try {
-    const { lead, formData } = await req.json();
+    const { lead, formData, aiReport } = await req.json();
     const metrics = calcMetrics(formData);
 
-    // Run all three in parallel — non-blocking, failures are silent
-    await Promise.allSettled([
+    const [supabaseResult] = await Promise.allSettled([
       saveToSupabase(lead, formData, metrics),
       saveToGoogleSheets(lead, formData, metrics),
       sendEmailNotification(lead, formData, metrics),
     ]);
 
-    return NextResponse.json({ ok: true });
+    // If AI report was passed in, patch it onto the row
+    const rowId = supabaseResult?.value;
+    if (rowId && aiReport) {
+      const url = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
+      const key = process.env.SUPABASE_SERVICE_KEY;
+      await fetch(`${url}/rest/v1/audit_leads?id=eq.${rowId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "apikey": key,
+          "Authorization": `Bearer ${key}`,
+        },
+        body: JSON.stringify({ ai_report: aiReport }),
+      });
+    }
+
+    return NextResponse.json({ ok: true, rowId });
   } catch (err) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }

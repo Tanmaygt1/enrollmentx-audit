@@ -615,8 +615,21 @@ Write 4 punchy paragraphs: (1) Biggest bottleneck + its rupee impact. (2) Why le
   }),
 });
         const data = await res.json();
-        setAiTxt(data.text || fallback());
-      } catch { setAiTxt(fallback()); }
+const reportText = data.text || fallback();
+setAiTxt(reportText);
+
+// Save the full AI report back to the audit row
+if (reportText) {
+  fetch("/api/capture", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      lead: {},       // already saved, just patching
+      formData: fd,
+      aiReport: reportText,
+    }),
+  }).catch(() => {});
+}      } catch { setAiTxt(fallback()); }
       finally { setAiLoad(false); }
     })();
   }, []);
