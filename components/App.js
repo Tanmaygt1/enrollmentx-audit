@@ -423,7 +423,7 @@ function AuditForm({ onSubmit }) {
           {!ok() && <p style={{ fontSize: 12, color: "#3a3d55", textAlign: "center", marginTop: 10 }}>Please answer all questions above to continue</p>}
         </div>
 
-        <p style={{ textAlign: "center", fontSize: 12, color: "#2e3050", marginTop: 14 }}>🔒 Your data is used only to generate your report — nothing is stored or shared.</p>
+       \
       </div>
     </div>
   );
