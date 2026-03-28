@@ -382,6 +382,11 @@ export async function POST(req) {
   try {
     const { lead, formData, aiReport } = await req.json();
     const metrics = calcMetrics(formData);
+    console.log("=== CAPTURE DEBUG ===");
+    console.log("lead email:", lead?.email);
+    console.log("RESEND_API_KEY exists:", !!process.env.RESEND_API_KEY);
+    console.log("SUPABASE_URL:", process.env.SUPABASE_URL);
+    console.log("NOTIFY_EMAIL:", process.env.NOTIFY_EMAIL);
 
     const [supabaseResult] = await Promise.allSettled([
       saveToSupabase(lead, formData, metrics),

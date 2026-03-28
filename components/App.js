@@ -970,45 +970,52 @@ export default function App() {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
-        setUser(session.user);
-        const params = new URLSearchParams(window.location.search);
-        if (params.get("audit") === "true") {
-  const saved = sessionStorage.getItem("audit_fd");
-  if (saved) {
-    const restoredFd = JSON.parse(saved);
-    sessionStorage.removeItem("audit_fd");
-    setFd(restoredFd);
-    const profile = {
-      name: session.user.user_metadata?.full_name || "",
-      email: session.user.email || "",
-      phone: session.user.user_metadata?.phone || "",
-      agency: "",
-    };
-    setLead(profile);
+  const params = new URLSearchParams(window.location.search);
 
-    // ✅ Save Google auth user to audit_leads immediately
-    fetch("/api/capture", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ lead: profile, formData: restoredFd }),
-    }).catch(() => {});
+  supabase.auth.getSession().then(({ data: { session } }) => {
+    if (session?.user) {
+      setUser(session.user);
 
-    setScreen("analyzing");
-    setTimeout(() => setScreen("report"), 5800);
-  }
-}
+      if (params.get("audit") === "true") {
+        const saved = sessionStorage.getItem("audit_fd");
+        if (saved) {
+          const restoredFd = JSON.parse(saved);
+          sessionStorage.removeItem("audit_fd");
+
+          const profile = {
+            name: session.user.user_metadata?.full_name || "",
+            email: session.user.email || "",
+            phone: session.user.user_metadata?.phone || "",
+            agency: "",
+          };
+
+          setFd(restoredFd);
+          setLead(profile);
+
+          // Save to DB
+          fetch("/api/capture", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ lead: profile, formData: restoredFd }),
+          }).catch(() => {});
+
+          setScreen("analyzing");
+          setTimeout(() => setScreen("report"), 5800);
+
+          // Clean URL without reload
+          window.history.replaceState({}, "", window.location.pathname);
+          return;
+        }
       }
-    });
+    }
+  });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-    });
+  const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    setUser(session?.user ?? null);
+  });
 
-    return () => subscription.unsubscribe();
-  }, []);
-
+  return () => subscription.unsubscribe();
+}, []);
   const submitForm = data => { setFd(data); setScreen("capture"); };
   const submitLead = ld  => { setLead(ld); setScreen("analyzing"); setTimeout(() => setScreen("report"), 5800); };
   const restart    = ()  => { setFd(null); setLead(null); setScreen("landing"); };
