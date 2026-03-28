@@ -1042,4 +1042,4 @@ export default function App() {
       {screen === "report"    && <Report fd={fd} lead={lead} onRestart={restart} />}
     </>
   );
-}
+} 
