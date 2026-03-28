@@ -603,36 +603,53 @@ Agency data:
 Write 4 punchy paragraphs: (1) Biggest bottleneck + its rupee impact. (2) Why leads drop at "${fd.dropOffStage}" stage. (3) How response time + manual work compound the problem. (4) Top 2 AI fixes with estimated ROI. Use real numbers throughout.`;
 
     (async () => {
-      try {
-        const res = await fetch("/api/analyze", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({
-    prompt,
-    businessName: lead?.agency || "",   // from LeadCapture's "Agency Name" field
-    email: lead?.email || "",
-    score: m.score,
-  }),
-});
-        const data = await res.json();
-const reportText = data.text || fallback();
-setAiTxt(reportText);
+  try {
+    const res = await fetch("/api/analyze", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        prompt,
+        businessName: lead?.agency || "",
+        email: lead?.email || "",
+        score: m.score,
+      }),
+    });
+    const data = await res.json();
+    const reportText = data.text || fallback();
+    setAiTxt(reportText);
 
-// Save the full AI report back to the audit row
-if (reportText) {
-  fetch("/api/capture", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({
-    lead: lead || {},   // ← now passes name, email for both Google + manual users
-    formData: fd,
-    aiReport: reportText,
-  }),
-}).catch(() => {});
-}      } catch { setAiTxt(fallback()); }
-      finally { setAiLoad(false); }
-    })();
-  }, []);
+    console.log("Calling /api/capture with lead:", lead, "fd exists:", !!fd);
+    fetch("/api/capture", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        lead: lead || {},
+        formData: fd,
+        aiReport: reportText,
+      }),
+    }).then(r => console.log("/api/capture status:", r.status))
+      .catch(e => console.log("/api/capture error:", e.message));
+
+  } catch (err) {
+    console.log("analyze error:", err.message);
+    const reportText = fallback();
+    setAiTxt(reportText);
+
+    fetch("/api/capture", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        lead: lead || {},
+        formData: fd,
+        aiReport: reportText,
+      }),
+    }).catch(() => {});
+
+  } finally {
+    setAiLoad(false);
+  }
+})();                // ← async block ends here
+}, []);              // ← useEffect ends here
 
   const fallback = () => {
     const followUpStr = m.followUpArr.includes("none") || m.followUpArr.length === 0
@@ -970,52 +987,45 @@ export default function App() {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-  const params = new URLSearchParams(window.location.search);
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        setUser(session.user);
+        const params = new URLSearchParams(window.location.search);
+        if (params.get("audit") === "true") {
+  const saved = sessionStorage.getItem("audit_fd");
+  if (saved) {
+    const restoredFd = JSON.parse(saved);
+    sessionStorage.removeItem("audit_fd");
+    setFd(restoredFd);
+    const profile = {
+      name: session.user.user_metadata?.full_name || "",
+      email: session.user.email || "",
+      phone: session.user.user_metadata?.phone || "",
+      agency: "",
+    };
+    setLead(profile);
 
-  supabase.auth.getSession().then(({ data: { session } }) => {
-    if (session?.user) {
-      setUser(session.user);
+    // ✅ Save Google auth user to audit_leads immediately
+    fetch("/api/capture", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ lead: profile, formData: restoredFd }),
+    }).catch(() => {});
 
-      if (params.get("audit") === "true") {
-        const saved = sessionStorage.getItem("audit_fd");
-        if (saved) {
-          const restoredFd = JSON.parse(saved);
-          sessionStorage.removeItem("audit_fd");
-
-          const profile = {
-            name: session.user.user_metadata?.full_name || "",
-            email: session.user.email || "",
-            phone: session.user.user_metadata?.phone || "",
-            agency: "",
-          };
-
-          setFd(restoredFd);
-          setLead(profile);
-
-          // Save to DB
-          fetch("/api/capture", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ lead: profile, formData: restoredFd }),
-          }).catch(() => {});
-
-          setScreen("analyzing");
-          setTimeout(() => setScreen("report"), 5800);
-
-          // Clean URL without reload
-          window.history.replaceState({}, "", window.location.pathname);
-          return;
-        }
+    setScreen("analyzing");
+    setTimeout(() => setScreen("report"), 5800);
+  }
+}
       }
-    }
-  });
+    });
 
-  const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-    setUser(session?.user ?? null);
-  });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
 
-  return () => subscription.unsubscribe();
-}, []);
+    return () => subscription.unsubscribe();
+  }, []);
+
   const submitForm = data => { setFd(data); setScreen("capture"); };
   const submitLead = ld  => { setLead(ld); setScreen("analyzing"); setTimeout(() => setScreen("report"), 5800); };
   const restart    = ()  => { setFd(null); setLead(null); setScreen("landing"); };
