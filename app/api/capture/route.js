@@ -235,15 +235,19 @@ async function sendEmailNotification(lead, formData, metrics, aiReport) {
       </div>`;
 
     await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${resendKey}` },
-      body: JSON.stringify({
-        from: "EnrollmentX Audit <audit@enrollmentx.ai>",
-        to: [notifyEmail],
-        subject: `🎯 New Lead — ${lead.name || "Unknown"}${lead.agency ? ` (${lead.agency})` : ""} | Score: ${metrics.score}/100 | Loss: ${inr(metrics.mLoss)}/mo`,
-        html: adminHtml,
-      }),
-    });
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${resendKey}`,
+    },
+    body: JSON.stringify({
+      from: "EnrollmentX Audit <audit@enrollmentx.ai>",
+      to: ["tanmay.inf@gmail.com"],          // ← always goes to you
+      cc: lead.email ? [lead.email] : [],    // ← CC the user if email exists
+      subject: `🎯 New Audit Lead${lead.name ? ` — ${lead.name}` : ""}${lead.agency ? ` (${lead.agency})` : ""} | Score: ${metrics.score}/100 | Loss: ₹${metrics.mLoss.toLocaleString("en-IN")}/mo`,
+      html,
+    }),
+  });
   }
 
   // ── Email 2: send report to the user ─────────────────────────────────────

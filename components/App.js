@@ -423,7 +423,7 @@ function AuditForm({ onSubmit }) {
           {!ok() && <p style={{ fontSize: 12, color: "#3a3d55", textAlign: "center", marginTop: 10 }}>Please answer all questions above to continue</p>}
         </div>
 
-       \
+       
       </div>
     </div>
   );
@@ -621,14 +621,14 @@ setAiTxt(reportText);
 // Save the full AI report back to the audit row
 if (reportText) {
   fetch("/api/capture", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      lead: {},       // already saved, just patching
-      formData: fd,
-      aiReport: reportText,
-    }),
-  }).catch(() => {});
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    lead: lead || {},   // ← now passes name, email for both Google + manual users
+    formData: fd,
+    aiReport: reportText,
+  }),
+}).catch(() => {});
 }      } catch { setAiTxt(fallback()); }
       finally { setAiLoad(false); }
     })();
