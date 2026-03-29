@@ -240,7 +240,7 @@ async function sendEmailNotification(lead, formData, metrics, aiReport) {
   method: "POST",
   headers: { "Content-Type": "application/json", "Authorization": `Bearer ${resendKey}` },
   body: JSON.stringify({
-    from: "EnrollmentX Audit <audit@enrollmentx.ai>",
+    from: "EnrollmentX Audit <onboarding@resend.dev>",
     to: ["tanmay.inf@gmail.com"],
     cc: lead.email ? [lead.email] : [],
     subject: `🎯 New Audit Lead${lead.name ? ` — ${lead.name}` : ""} | Score: ${metrics.score}/100 | Loss: ₹${metrics.mLoss.toLocaleString("en-IN")}/mo`,
@@ -370,7 +370,7 @@ console.log("Resend response:", JSON.stringify(resendData));
     method: "POST",
     headers: { "Content-Type": "application/json", "Authorization": `Bearer ${resendKey}` },
     body: JSON.stringify({
-      from: "EnrollmentX Audit <audit@enrollmentx.ai>",
+      from: "EnrollmentX Audit <onboarding@resend.dev>",
       to: [lead.email],
       subject: `Your EnrollmentX Audit — Score: ${metrics.score}/100 | You're losing ${inr(metrics.mLoss)}/month`,
       html: userHtml,
@@ -383,19 +383,28 @@ export async function POST(req) {
   try {
     const { lead, formData, aiReport } = await req.json();
     const metrics = calcMetrics(formData);
+
+    // TEMP DEBUG
     console.log("=== CAPTURE DEBUG ===");
     console.log("lead email:", lead?.email);
     console.log("RESEND_API_KEY exists:", !!process.env.RESEND_API_KEY);
     console.log("SUPABASE_URL:", process.env.SUPABASE_URL);
     console.log("NOTIFY_EMAIL:", process.env.NOTIFY_EMAIL);
 
+    // Run DB and Sheets in parallel, but await email separately so it completes
     const [supabaseResult] = await Promise.allSettled([
       saveToSupabase(lead, formData, metrics),
       saveToGoogleSheets(lead, formData, metrics),
-      sendEmailNotification(lead, formData, metrics),
     ]);
 
-    // If AI report was passed in, patch it onto the row
+    // Await email directly so function doesn't exit before it finishes
+    try {
+      await sendEmailNotification(lead, formData, metrics, aiReport);
+    } catch (emailErr) {
+      console.log("Email error:", emailErr.message);
+    }
+
+    // Patch AI report into DB row
     const rowId = supabaseResult?.value;
     if (rowId && aiReport) {
       const url = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
