@@ -198,6 +198,7 @@ async function getGoogleToken(sa) {
 
 // ── Email via Resend ──────────────────────────────────────────────────────────
 async function sendEmailNotification(lead, formData, metrics, aiReport) {
+  console.log("Sending email to:", lead.email, "resend key:", !!resendKey);
   const resendKey   = process.env.RESEND_API_KEY;
   const notifyEmail = process.env.NOTIFY_EMAIL;
   if (!resendKey) return;
