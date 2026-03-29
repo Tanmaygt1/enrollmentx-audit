@@ -198,9 +198,10 @@ async function getGoogleToken(sa) {
 
 // ── Email via Resend ──────────────────────────────────────────────────────────
 async function sendEmailNotification(lead, formData, metrics, aiReport) {
-  console.log("Sending email to:", lead.email, "resend key:", !!resendKey);
+  
   const resendKey   = process.env.RESEND_API_KEY;
   const notifyEmail = process.env.NOTIFY_EMAIL;
+  console.log("Sending email to:", lead.email, "resend key:", !!resendKey);
   if (!resendKey) return;
 
   const inr = n => "₹" + Number(n).toLocaleString("en-IN");
@@ -235,20 +236,19 @@ async function sendEmailNotification(lead, formData, metrics, aiReport) {
         </a>
       </div>`;
 
-    await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${resendKey}`,
-    },
-    body: JSON.stringify({
-      from: "EnrollmentX Audit <audit@enrollmentx.ai>",
-      to: ["tanmay.inf@gmail.com"],          // ← always goes to you
-      cc: lead.email ? [lead.email] : [],    // ← CC the user if email exists
-      subject: `🎯 New Audit Lead${lead.name ? ` — ${lead.name}` : ""}${lead.agency ? ` (${lead.agency})` : ""} | Score: ${metrics.score}/100 | Loss: ₹${metrics.mLoss.toLocaleString("en-IN")}/mo`,
-      html,
-    }),
-  });
+   const resendRes = await fetch("https://api.resend.com/emails", {
+  method: "POST",
+  headers: { "Content-Type": "application/json", "Authorization": `Bearer ${resendKey}` },
+  body: JSON.stringify({
+    from: "EnrollmentX Audit <audit@enrollmentx.ai>",
+    to: ["tanmay.inf@gmail.com"],
+    cc: lead.email ? [lead.email] : [],
+    subject: `🎯 New Audit Lead${lead.name ? ` — ${lead.name}` : ""} | Score: ${metrics.score}/100 | Loss: ₹${metrics.mLoss.toLocaleString("en-IN")}/mo`,
+    html: adminHtml,
+  }),
+});
+const resendData = await resendRes.json();
+console.log("Resend response:", JSON.stringify(resendData));
   }
 
   // ── Email 2: send report to the user ─────────────────────────────────────
