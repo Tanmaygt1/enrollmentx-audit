@@ -574,7 +574,7 @@ function OppCard({ title, impact, priority, idx }) {
 }
 
 // ── Report — updated prompt to use array fields ───────────────────────────────
-function Report({ fd, onRestart }) {
+function Report({ fd, lead, onRestart }) {
   const m = calc(fd);
   const [aiTxt, setAiTxt] = useState("");
   const [aiLoad, setAiLoad] = useState(true);
