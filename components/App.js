@@ -149,7 +149,7 @@ const G = `
   /* ── Nav ── */
   .nav {
     position: fixed; top: 0; left: 0; right: 0; z-index: 200;
-    height: 62px; display: flex; align-items: center; padding: 0 32px;
+    height: 62px; display: flex; align-items: center; padding: 0 20px;
     background: rgba(5,5,5,0.6);
     backdrop-filter: blur(24px);
     border-bottom: 1px solid var(--glass-border);
@@ -360,6 +360,71 @@ const G = `
     transition: width 0.6s cubic-bezier(0.16,1,0.3,1);
     box-shadow: 0 0 10px var(--gold-glow);
   }
+
+  /* ── MOBILE RESPONSIVE ── */
+  @media (max-width: 768px) {
+    .nav { padding: 0 16px; }
+    .nav-email { display: none !important; }
+
+    .hero-grid { grid-template-columns: 1fr !important; gap: 40px !important; }
+    .hero-right { display: none !important; }
+    .hero-padding { padding: 80px 20px 48px !important; }
+    .hero-stats { gap: 24px !important; }
+
+    .how-steps { grid-template-columns: 1fr !important; gap: 12px !important; }
+    .how-step-first { border-radius: 16px !important; }
+    .how-step-last  { border-radius: 16px !important; }
+    .how-step-mid   { border-radius: 16px !important; }
+
+    .testimonials-grid { grid-template-columns: 1fr !important; }
+
+    .section-pad { padding: 60px 20px !important; }
+
+    .audit-form-card { padding: 24px 20px !important; }
+    .audit-form-wrap { padding: 82px 16px 48px !important; }
+
+    .report-hero-pad { padding: 48px 20px 36px !important; }
+    .report-body-pad { padding: 24px 16px 80px !important; }
+
+    .score-diag-flex { flex-direction: column !important; gap: 24px !important; }
+    .score-diag-border { border-left: none !important; border-top: 1px solid rgba(255,255,255,0.08) !important; padding-left: 0 !important; padding-top: 24px !important; }
+
+    .eff-grid { grid-template-columns: 1fr !important; gap: 16px !important; }
+
+    .vip-card-pad { padding: 40px 24px !important; }
+    .vip-cta-buttons { flex-direction: column !important; align-items: stretch !important; }
+    .vip-cta-buttons .btn-cta { padding: 18px 28px !important; font-size: 15px !important; }
+    .vip-cta-buttons .btn-ghost { justify-content: center !important; }
+    .vip-trust-row { gap: 16px !important; }
+
+    .lead-capture-wrap { padding: 82px 16px 48px !important; }
+    .lead-capture-teaser { flex-direction: column !important; gap: 16px !important; align-items: flex-start !important; }
+    .lead-capture-card { padding: 28px 20px !important; }
+
+    .btn-cta { padding: 16px 28px !important; font-size: 15px !important; }
+
+    .hero-badge { font-size: 10px !important; padding: 6px 14px !important; }
+    .hero-badge-text { display: none; }
+    .hero-badge-text-short { display: inline !important; }
+
+    .landing-cta-row { flex-direction: column !important; align-items: flex-start !important; gap: 10px !important; }
+
+    .analyzing-wrap { padding: 20px !important; }
+    .analyzing-card { padding: 20px !important; }
+
+    .opp-card-inner { flex-direction: column !important; gap: 12px !important; }
+
+    .growth-numbers { flex-direction: column !important; gap: 8px !important; }
+  }
+
+  @media (max-width: 480px) {
+    .hero-padding { padding: 76px 16px 40px !important; }
+    .audit-form-card { padding: 20px 16px !important; }
+    .report-body-pad { padding: 16px 12px 80px !important; }
+    .vip-card-pad { padding: 32px 16px !important; }
+    .lead-capture-card { padding: 24px 16px !important; }
+    .section-pad { padding: 48px 16px !important; }
+  }
 `;
 
 /* ─────────────────────────────────────────────────────────────────────────────
@@ -434,7 +499,7 @@ function Nav({ user, onSignOut, onStart }) {
       <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 14 }}>
         {user ? (
           <>
-            <span style={{ fontSize: 13, color: "var(--white-40)" }}>{user.email}</span>
+            <span className="nav-email" style={{ fontSize: 13, color: "var(--white-40)" }}>{user.email}</span>
             <button className="btn btn-ghost" style={{ padding: "7px 16px", fontSize: 12 }} onClick={onSignOut}>Sign out</button>
           </>
         ) : (
@@ -454,64 +519,66 @@ function Landing({ onStart }) {
   return (
     <div style={{ minHeight: "100vh", position: "relative" }}>
       {/* Hero */}
-      <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", justifyContent: "center", padding: "80px 40px", position: "relative", zIndex: 1 }}>
-        <div style={{ maxWidth: 1100, margin: "0 auto", width: "100%", display: "grid", gridTemplateColumns: "1fr 440px", gap: 80, alignItems: "center" }}>
-          {/* Left */}
-          <div>
-            <div className="anim" style={{ display: "inline-flex", alignItems: "center", gap: 10, background: "rgba(200,169,110,0.08)", border: "1px solid rgba(200,169,110,0.25)", borderRadius: 40, padding: "7px 18px", marginBottom: 40 }}>
-              <span style={{ width: 7, height: 7, borderRadius: "50%", background: "var(--emerald)", boxShadow: "0 0 10px var(--emerald-glow)", animation: "pulse 2s infinite", display: "block" }} />
-              <span style={{ fontSize: 11, color: "var(--gold)", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase" }}>Free Audit · 2 Minutes · No Credit Card</span>
+      <div className="hero-padding" style={{ minHeight: "100vh", display: "flex", flexDirection: "column", justifyContent: "center", padding: "80px 40px", position: "relative", zIndex: 1 }}>
+        <div style={{ maxWidth: 1100, margin: "0 auto", width: "100%" }}>
+          <div className="hero-grid" style={{ display: "grid", gridTemplateColumns: "1fr 440px", gap: 80, alignItems: "center" }}>
+            {/* Left */}
+            <div>
+              <div className="anim hero-badge" style={{ display: "inline-flex", alignItems: "center", gap: 10, background: "rgba(200,169,110,0.08)", border: "1px solid rgba(200,169,110,0.25)", borderRadius: 40, padding: "7px 18px", marginBottom: 40 }}>
+                <span style={{ width: 7, height: 7, borderRadius: "50%", background: "var(--emerald)", boxShadow: "0 0 10px var(--emerald-glow)", animation: "pulse 2s infinite", display: "block", flexShrink: 0 }} />
+                <span style={{ fontSize: 11, color: "var(--gold)", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase" }}>Free Audit · 2 Minutes · No Credit Card</span>
+              </div>
+
+              <h1 className="anim d1" style={{ fontSize: "clamp(40px, 5.5vw, 74px)", fontWeight: 400, marginBottom: 28, color: "#fff" }}>
+                Stop losing<br />
+                <em style={{ color: "var(--gold)", textShadow: "0 0 40px rgba(200,169,110,0.4), 0 2px 10px rgba(0,0,0,0.3)" }}>₹2 crore</em><br />
+                every year
+              </h1>
+
+              <p className="anim d2" style={{ fontSize: 18, color: "var(--white-60)", lineHeight: 1.9, maxWidth: 500, marginBottom: 48, fontWeight: 300 }}>
+                Most study abroad agencies lose 35–60% of their revenue to slow response times, broken follow-up, and manual operations. Find out exactly how much — in 2 minutes.
+              </p>
+
+              <div className="anim d3 landing-cta-row" style={{ display: "flex", gap: 14, flexWrap: "wrap", alignItems: "center", marginBottom: 60 }}>
+                <button className="btn btn-gold" style={{ fontSize: 15, padding: "17px 40px" }} onClick={onStart}>
+                  <svg width="17" height="17" viewBox="0 0 17 17" fill="none"><path d="M8.5 1.5L3 8.5h4v7l6-7h-4z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round"/></svg>
+                  Get My Free Audit Report
+                </button>
+                <span style={{ fontSize: 12, color: "var(--white-40)", letterSpacing: "0.04em" }}>2–3 minutes · 100% confidential</span>
+              </div>
+
+              {/* Stats */}
+              <div className="anim d4 hero-stats" style={{ display: "flex", gap: 40, flexWrap: "wrap" }}>
+                {[["₹2.4Cr+", "Avg annual leak found"], ["87%", "Miss AI opportunities"], ["30 days", "To see results"]].map(([n, l]) => (
+                  <div key={n}>
+                    <div style={{ fontFamily: "var(--serif)", fontStyle: "italic", fontSize: 28, color: "var(--gold)", lineHeight: 1, textShadow: "0 0 20px rgba(200,169,110,0.3)" }}>{n}</div>
+                    <div style={{ fontSize: 12, color: "var(--white-40)", marginTop: 5, fontWeight: 400 }}>{l}</div>
+                  </div>
+                ))}
+              </div>
             </div>
 
-            <h1 className="anim d1" style={{ fontSize: "clamp(46px, 5.5vw, 74px)", fontWeight: 400, marginBottom: 28, color: "#fff" }}>
-              Stop losing<br />
-              <em style={{ color: "var(--gold)", textShadow: "0 0 40px rgba(200,169,110,0.4), 0 2px 10px rgba(0,0,0,0.3)" }}>₹2 crore</em><br />
-              every year
-            </h1>
-
-            <p className="anim d2" style={{ fontSize: 18, color: "var(--white-60)", lineHeight: 1.9, maxWidth: 500, marginBottom: 48, fontWeight: 300 }}>
-              Most study abroad agencies lose 35–60% of their revenue to slow response times, broken follow-up, and manual operations. Find out exactly how much — in 2 minutes.
-            </p>
-
-            <div className="anim d3" style={{ display: "flex", gap: 14, flexWrap: "wrap", alignItems: "center", marginBottom: 60 }}>
-              <button className="btn btn-gold" style={{ fontSize: 15, padding: "17px 40px" }} onClick={onStart}>
-                <svg width="17" height="17" viewBox="0 0 17 17" fill="none"><path d="M8.5 1.5L3 8.5h4v7l6-7h-4z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round"/></svg>
-                Get My Free Audit Report
-              </button>
-              <span style={{ fontSize: 12, color: "var(--white-40)", letterSpacing: "0.04em" }}>2–3 minutes · 100% confidential</span>
-            </div>
-
-            {/* Stats */}
-            <div className="anim d4" style={{ display: "flex", gap: 40, flexWrap: "wrap" }}>
-              {[["₹2.4Cr+", "Avg annual leak found"], ["87%", "Miss AI opportunities"], ["30 days", "To see results"]].map(([n, l]) => (
-                <div key={n}>
-                  <div style={{ fontFamily: "var(--serif)", fontStyle: "italic", fontSize: 28, color: "var(--gold)", lineHeight: 1, textShadow: "0 0 20px rgba(200,169,110,0.3)" }}>{n}</div>
-                  <div style={{ fontSize: 12, color: "var(--white-40)", marginTop: 5, fontWeight: 400 }}>{l}</div>
+            {/* Right: glass card — hidden on mobile via CSS */}
+            <div className="glass-strong anim d2 hero-right" style={{ padding: "32px", animation: "floatUp 5s ease-in-out infinite" }}>
+              <div className="slabel" style={{ marginBottom: 22 }}>What we analyse</div>
+              {[
+                ["Response time & conversion gap", "Most agencies lose 30% here alone"],
+                ["Follow-up process & drop-off stages", "80% of sales need 5+ touches"],
+                ["Manual workload & counselor efficiency", "Typically 40+ hrs/week wasted"],
+                ["Ad spend ROI & cost per conversion", "Most spend 2× what they should"],
+                ["CRM usage & document workflow", "35% more leads lost without CRM"],
+              ].map(([t, s], i) => (
+                <div key={i} style={{ display: "flex", gap: 14, marginBottom: i < 4 ? 20 : 0, paddingBottom: i < 4 ? 20 : 0, borderBottom: i < 4 ? "1px solid rgba(255,255,255,0.06)" : "none" }}>
+                  <div style={{ width: 28, height: 28, borderRadius: 7, background: "var(--gold-dim)", border: "1px solid var(--gold-mid)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <span style={{ fontSize: 11, fontWeight: 800, color: "var(--gold)" }}>{i + 1}</span>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 13, color: "var(--white-80)", fontWeight: 600, marginBottom: 2 }}>{t}</div>
+                    <div style={{ fontSize: 12, color: "var(--white-40)" }}>{s}</div>
+                  </div>
                 </div>
               ))}
             </div>
-          </div>
-
-          {/* Right: glass card */}
-          <div className="glass-strong anim d2" style={{ padding: "32px", animation: "floatUp 5s ease-in-out infinite" }}>
-            <div className="slabel" style={{ marginBottom: 22 }}>What we analyse</div>
-            {[
-              ["Response time & conversion gap", "Most agencies lose 30% here alone"],
-              ["Follow-up process & drop-off stages", "80% of sales need 5+ touches"],
-              ["Manual workload & counselor efficiency", "Typically 40+ hrs/week wasted"],
-              ["Ad spend ROI & cost per conversion", "Most spend 2× what they should"],
-              ["CRM usage & document workflow", "35% more leads lost without CRM"],
-            ].map(([t, s], i) => (
-              <div key={i} style={{ display: "flex", gap: 14, marginBottom: i < 4 ? 20 : 0, paddingBottom: i < 4 ? 20 : 0, borderBottom: i < 4 ? "1px solid rgba(255,255,255,0.06)" : "none" }}>
-                <div style={{ width: 28, height: 28, borderRadius: 7, background: "var(--gold-dim)", border: "1px solid var(--gold-mid)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                  <span style={{ fontSize: 11, fontWeight: 800, color: "var(--gold)" }}>{i + 1}</span>
-                </div>
-                <div>
-                  <div style={{ fontSize: 13, color: "var(--white-80)", fontWeight: 600, marginBottom: 2 }}>{t}</div>
-                  <div style={{ fontSize: 12, color: "var(--white-40)" }}>{s}</div>
-                </div>
-              </div>
-            ))}
           </div>
         </div>
       </div>
@@ -530,22 +597,22 @@ function Landing({ onStart }) {
       </div>
 
       {/* How it works */}
-      <div style={{ position: "relative", zIndex: 1, padding: "100px 40px" }}>
+      <div className="section-pad" style={{ position: "relative", zIndex: 1, padding: "100px 40px" }}>
         <div style={{ maxWidth: 1000, margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: 64 }}>
             <div className="slabel" style={{ marginBottom: 16 }}>How it works</div>
-            <h2 className="serif-title" style={{ fontSize: "clamp(32px, 4vw, 52px)", fontWeight: 400, color: "#fff" }}>
+            <h2 className="serif-title" style={{ fontSize: "clamp(28px, 4vw, 52px)", fontWeight: 400, color: "#fff" }}>
               From answers to action<br /><em>in under 3 minutes</em>
             </h2>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 2 }}>
+          <div className="how-steps" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 2 }}>
             {[
               { n: "01", t: "Answer 15 questions", d: "About your leads, team, budget, and operations." },
               { n: "02", t: "AI analyses your agency", d: "We calculate your exact revenue gap vs. benchmark." },
               { n: "03", t: "Get your report", d: "Rupee figures, bottleneck diagnosis, ranked fix plan." },
               { n: "04", t: "Book your call", d: "Our specialists deploy the AI fixes for you." },
             ].map((s, i) => (
-              <div key={i} className="glass" style={{ padding: "32px 26px", borderRadius: i === 0 ? "16px 4px 4px 16px" : i === 3 ? "4px 16px 16px 4px" : "4px", background: i === 3 ? "rgba(200,169,110,0.08)" : "var(--glass-bg)", borderColor: i === 3 ? "rgba(200,169,110,0.3)" : "var(--glass-border)" }}>
+              <div key={i} className={`glass ${i === 0 ? "how-step-first" : i === 3 ? "how-step-last" : "how-step-mid"}`} style={{ padding: "32px 26px", borderRadius: i === 0 ? "16px 4px 4px 16px" : i === 3 ? "4px 16px 16px 4px" : "4px", background: i === 3 ? "rgba(200,169,110,0.08)" : "var(--glass-bg)", borderColor: i === 3 ? "rgba(200,169,110,0.3)" : "var(--glass-border)" }}>
                 <div style={{ fontSize: 11, fontWeight: 800, color: i === 3 ? "var(--gold)" : "var(--white-40)", letterSpacing: "0.12em", marginBottom: 18 }}>{s.n}</div>
                 <h3 style={{ fontFamily: "var(--serif)", fontStyle: "italic", fontSize: 22, fontWeight: 400, color: "#fff", marginBottom: 10, lineHeight: 1.3 }}>{s.t}</h3>
                 <p style={{ fontSize: 14, color: "var(--white-40)", lineHeight: 1.7 }}>{s.d}</p>
@@ -559,10 +626,10 @@ function Landing({ onStart }) {
       </div>
 
       {/* Testimonials */}
-      <div style={{ position: "relative", zIndex: 1, padding: "80px 40px", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+      <div className="section-pad" style={{ position: "relative", zIndex: 1, padding: "80px 40px", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
         <div style={{ maxWidth: 960, margin: "0 auto" }}>
           <div className="slabel" style={{ marginBottom: 48, textAlign: "center" }}>What agencies discover</div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 20 }}>
+          <div className="testimonials-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 20 }}>
             {[
               { q: "We found ₹18L/month leaking through slow response time alone. Fixed in 2 weeks with their chatbot.", r: "Director, Premium Study Hub, Pune" },
               { q: "Our counselors were wasting 38 hours a week on tasks AI now handles. We used that time to close 40% more deals.", r: "Founder, Global Pathways, Hyderabad" },
@@ -767,7 +834,7 @@ function AuditForm({ onSubmit }) {
   const pct = Math.round((step / 5) * 100);
 
   return (
-    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", padding: "92px 20px 60px", position: "relative", zIndex: 1 }}>
+    <div className="audit-form-wrap" style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", padding: "92px 20px 60px", position: "relative", zIndex: 1 }}>
 
       {/* Fixed top progress */}
       <div style={{ position: "fixed", top: 62, left: 0, right: 0, zIndex: 150 }}>
@@ -803,7 +870,7 @@ function AuditForm({ onSubmit }) {
 
         {/* Card with step transition */}
         <div
-          className="glass"
+          className="glass audit-form-card"
           style={{
             padding: "36px",
             animation: exiting ? "fadeOut 0.28s cubic-bezier(0.16,1,0.3,1) forwards" : "stepIn 0.55s cubic-bezier(0.16,1,0.3,1) both",
@@ -858,7 +925,7 @@ function Analyzing() {
   }, []);
 
   return (
-    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 40, position: "relative", zIndex: 1 }}>
+    <div className="analyzing-wrap" style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 40, position: "relative", zIndex: 1 }}>
       <div style={{ maxWidth: 460, width: "100%", textAlign: "center" }}>
         <div style={{ position: "relative", width: 64, height: 64, margin: "0 auto 36px" }}>
           <div style={{ position: "absolute", inset: 0, borderRadius: "50%", border: "1px solid rgba(200,169,110,0.15)" }} />
@@ -871,7 +938,7 @@ function Analyzing() {
         <h2 style={{ fontFamily: "var(--serif)", fontStyle: "italic", fontSize: 30, fontWeight: 400, color: "#fff", marginBottom: 8, letterSpacing: "-0.02em", textShadow: "0 2px 10px rgba(0,0,0,0.3)" }}>Analysing Your Agency</h2>
         <p style={{ fontSize: 14, color: "var(--white-40)", marginBottom: 48 }}>Your confidential audit is being compiled — takes about 5 seconds.</p>
 
-        <div className="glass" style={{ padding: "28px 32px", textAlign: "left" }}>
+        <div className="glass analyzing-card" style={{ padding: "28px 32px", textAlign: "left" }}>
           <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
             {tasks.map((t, i) => (
               <div key={i} style={{ display: "flex", gap: 14, alignItems: "flex-start", opacity: i <= active ? 1 : 0.2, transition: "opacity 0.5s" }}>
@@ -1010,14 +1077,16 @@ function Bar({ label, val, pct, color, note }) {
 function OppCard({ title, impact, priority, idx }) {
   const pc = priority === "CRITICAL" ? "pc" : priority === "HIGH" ? "ph" : "pm";
   return (
-    <div className="glass" style={{ padding: "20px 24px", display: "flex", gap: 20, alignItems: "flex-start", animation: "fadeUp .5s cubic-bezier(0.16,1,0.3,1) both", animationDelay: `${idx * 0.08}s`, transition: "transform 0.2s, box-shadow 0.2s", cursor: "default" }}
+    <div className="glass" style={{ padding: "20px 24px", animation: "fadeUp .5s cubic-bezier(0.16,1,0.3,1) both", animationDelay: `${idx * 0.08}s`, transition: "transform 0.2s, box-shadow 0.2s", cursor: "default" }}
       onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 30px 60px -12px rgba(0,0,0,0.6), inset 0 1px 1px rgba(255,255,255,0.12)"; }}
       onMouseLeave={e => { e.currentTarget.style.transform = ""; e.currentTarget.style.boxShadow = ""; }}
     >
-      <div style={{ flexShrink: 0, paddingTop: 2 }}><span className={`pill ${pc}`}>{priority}</span></div>
-      <div style={{ flex: 1 }}>
-        <div style={{ fontFamily: "var(--serif)", fontStyle: "italic", fontWeight: 400, fontSize: 18, marginBottom: 6, color: "#fff", letterSpacing: "-0.01em" }}>{title}</div>
-        <div style={{ fontSize: 14, color: "var(--white-60)", lineHeight: 1.75 }}>{impact}</div>
+      <div className="opp-card-inner" style={{ display: "flex", gap: 20, alignItems: "flex-start" }}>
+        <div style={{ flexShrink: 0, paddingTop: 2 }}><span className={`pill ${pc}`}>{priority}</span></div>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontFamily: "var(--serif)", fontStyle: "italic", fontWeight: 400, fontSize: 18, marginBottom: 6, color: "#fff", letterSpacing: "-0.01em" }}>{title}</div>
+          <div style={{ fontSize: 14, color: "var(--white-60)", lineHeight: 1.75 }}>{impact}</div>
+        </div>
       </div>
     </div>
   );
@@ -1085,16 +1154,16 @@ Write 4 punchy paragraphs: (1) Biggest bottleneck + its rupee impact. (2) Why le
   return (
     <div style={{ position: "relative", zIndex: 1, paddingTop: 62 }}>
       {/* Report hero */}
-      <div style={{ padding: "64px 40px 48px", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+      <div className="report-hero-pad" style={{ padding: "64px 40px 48px", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
         <div style={{ maxWidth: 840, margin: "0 auto" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20, flexWrap: "wrap" }}>
             <div className="slabel" style={{ margin: 0 }}>FY 2026 · Agency Revenue Leakage Diagnosis</div>
             <div style={{ display: "flex", alignItems: "center", gap: 6, background: "rgba(200,169,110,0.08)", border: "1px solid rgba(200,169,110,0.2)", borderRadius: 4, padding: "3px 10px" }}>
               <svg width="9" height="11" viewBox="0 0 9 11" fill="none"><rect x="0.5" y="4.5" width="8" height="6" rx="1.5" stroke="var(--gold)" strokeWidth="1.2"/><path d="M2.5 4.5V3.5a2 2 0 014 0v1" stroke="var(--gold)" strokeWidth="1.2" strokeLinecap="round"/></svg>
               <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--gold)" }}>Confidential</span>
             </div>
           </div>
-          <h1 style={{ fontSize: "clamp(30px, 4vw, 50px)", fontWeight: 400, color: "#fff", marginBottom: 14 }}>
+          <h1 style={{ fontSize: "clamp(26px, 4vw, 50px)", fontWeight: 400, color: "#fff", marginBottom: 14 }}>
             Your Agency Audit<br /><em>Is Ready</em>
           </h1>
           <p style={{ color: "var(--white-40)", fontSize: 15 }}>
@@ -1103,27 +1172,29 @@ Write 4 punchy paragraphs: (1) Biggest bottleneck + its rupee impact. (2) Why le
         </div>
       </div>
 
-      <div style={{ maxWidth: 840, margin: "0 auto", padding: "36px 24px 100px" }}>
+      <div className="report-body-pad" style={{ maxWidth: 840, margin: "0 auto", padding: "36px 24px 100px" }}>
 
         {/* Score + Diagnosis */}
-        <div className="glass anim" style={{ padding: "32px", marginBottom: 20, display: "flex", gap: 40, alignItems: "flex-start", flexWrap: "wrap", borderTop: "1px solid rgba(200,169,110,0.4)" }}>
-          <RiskMeter score={m.score} />
-          <div style={{ flex: 1, minWidth: 220, borderLeft: "1px solid rgba(255,255,255,0.08)", paddingLeft: 32 }}>
-            <div className="slabel" style={{ marginBottom: 12 }}>AI Efficiency Diagnosis</div>
-            <h2 style={{ fontFamily: "var(--serif)", fontStyle: "italic", fontSize: 22, fontWeight: 400, marginBottom: 14, color: "#fff", lineHeight: 1.25, letterSpacing: "-0.02em" }}>
-              {m.score < 42 ? "Critical inefficiencies — urgent action required" : m.score < 68 ? "Several revenue leaks — moderate risk" : "Good foundation, specific gaps remain"}
-            </h2>
-            <p style={{ fontSize: 14, color: "var(--white-60)", lineHeight: 1.9 }}>
-              Top agencies score <strong style={{ color: "var(--white-80)" }}>75+</strong>. Your score of <strong style={{ color: m.score < 42 ? "var(--neon-red)" : m.score < 68 ? "var(--amber-neon)" : "var(--emerald)" }}>{m.score}/100</strong> indicates
-              {m.score < 42 ? " multiple compounding problems actively reducing your revenue every day." : m.score < 68 ? " clear gaps in conversion, follow-up, and operations limiting your growth." : " solid operations with specific gaps holding back full potential."}
-            </p>
+        <div className="glass anim" style={{ padding: "32px", marginBottom: 20, borderTop: "1px solid rgba(200,169,110,0.4)" }}>
+          <div className="score-diag-flex" style={{ display: "flex", gap: 40, alignItems: "flex-start", flexWrap: "wrap" }}>
+            <RiskMeter score={m.score} />
+            <div className="score-diag-border" style={{ flex: 1, minWidth: 220, borderLeft: "1px solid rgba(255,255,255,0.08)", paddingLeft: 32 }}>
+              <div className="slabel" style={{ marginBottom: 12 }}>AI Efficiency Diagnosis</div>
+              <h2 style={{ fontFamily: "var(--serif)", fontStyle: "italic", fontSize: 22, fontWeight: 400, marginBottom: 14, color: "#fff", lineHeight: 1.25, letterSpacing: "-0.02em" }}>
+                {m.score < 42 ? "Critical inefficiencies — urgent action required" : m.score < 68 ? "Several revenue leaks — moderate risk" : "Good foundation, specific gaps remain"}
+              </h2>
+              <p style={{ fontSize: 14, color: "var(--white-60)", lineHeight: 1.9 }}>
+                Top agencies score <strong style={{ color: "var(--white-80)" }}>75+</strong>. Your score of <strong style={{ color: m.score < 42 ? "var(--neon-red)" : m.score < 68 ? "var(--amber-neon)" : "var(--emerald)" }}>{m.score}/100</strong> indicates
+                {m.score < 42 ? " multiple compounding problems actively reducing your revenue every day." : m.score < 68 ? " clear gaps in conversion, follow-up, and operations limiting your growth." : " solid operations with specific gaps holding back full potential."}
+              </p>
+            </div>
           </div>
         </div>
 
         {/* Financial stats */}
         <div style={{ marginBottom: 20 }}>
           <div className="slabel" style={{ marginBottom: 14 }}>Financial Impact — What You're Losing</div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(170px, 1fr))", gap: 12 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 12 }}>
             <Stat label="Monthly Revenue Loss" value={inr(m.mLoss)} sub={`${m.lost} unconverted leads × ${inr(m.rps)}`} vc="var(--neon-red)" />
             <Stat label="Annual Revenue at Risk" value={inr(m.aLoss)} sub="Projected over 12 months" vc="var(--neon-red)" />
             <Stat label="Response Time Penalty" value={m.penalty ? inr(m.rtPenMoney) : "None"} sub={m.penalty ? `${m.rt}min → 30% conversion loss` : `${m.rt}min — within safe range`} vc={m.penalty ? "var(--amber-neon)" : "var(--emerald)"} />
@@ -1134,7 +1205,7 @@ Write 4 punchy paragraphs: (1) Biggest bottleneck + its rupee impact. (2) Why le
         {/* Efficiency bars */}
         <div className="glass anim d2" style={{ padding: "32px", marginBottom: 20 }}>
           <div className="slabel" style={{ marginBottom: 24 }}>Time & Operational Efficiency</div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 28, marginBottom: 32 }}>
+          <div className="eff-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 28, marginBottom: 32 }}>
             <div style={{ paddingBottom: 24, borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
               <div className="slabel" style={{ marginBottom: 8, fontSize: 9 }}>Counselor hours wasted / week</div>
               <div className="mono" style={{ fontSize: 38, color: "var(--amber-neon)", fontWeight: 700, textShadow: "0 0 20px rgba(251,191,36,0.4)" }}>{m.wWaste} <span style={{ fontSize: 16, fontWeight: 400, color: "var(--white-40)" }}>hrs</span></div>
@@ -1181,7 +1252,7 @@ Write 4 punchy paragraphs: (1) Biggest bottleneck + its rupee impact. (2) Why le
         {/* Growth */}
         <div className="glass-gold anim" style={{ padding: "32px", marginBottom: 24 }}>
           <div className="slabel" style={{ marginBottom: 16 }}>Your Growth Potential</div>
-          <div style={{ display: "flex", alignItems: "baseline", gap: 16, flexWrap: "wrap", marginBottom: 16 }}>
+          <div className="growth-numbers" style={{ display: "flex", alignItems: "baseline", gap: 16, flexWrap: "wrap", marginBottom: 16 }}>
             <div style={{ fontFamily: "var(--serif)", fontStyle: "italic", fontSize: 64, color: "var(--emerald)", fontWeight: 400, lineHeight: 1, textShadow: "0 0 30px var(--emerald-glow), 0 0 60px var(--emerald-glow)" }}>+{Math.min(m.growthPct, 150)}%</div>
             <div style={{ fontSize: 16, color: "var(--white-60)" }}>potential revenue increase</div>
           </div>
@@ -1191,13 +1262,13 @@ Write 4 punchy paragraphs: (1) Biggest bottleneck + its rupee impact. (2) Why le
         </div>
 
         {/* VIP CTA */}
-        <div className="vip-card" style={{ padding: "60px 48px", textAlign: "center" }}>
+        <div className="vip-card vip-card-pad" style={{ padding: "60px 48px", textAlign: "center" }}>
           {/* Inner glow top */}
           <div style={{ position: "absolute", top: -1, left: "10%", right: "10%", height: 1, background: "linear-gradient(90deg, transparent, rgba(200,169,110,0.6), transparent)", borderRadius: "50%" }} />
 
           <div style={{ position: "relative", zIndex: 1 }}>
             <div className="slabel" style={{ color: "rgba(200,169,110,0.4)", marginBottom: 20 }}>Ready to fix this?</div>
-            <h2 style={{ fontFamily: "var(--serif)", fontStyle: "italic", fontSize: "clamp(28px, 4vw, 46px)", fontWeight: 400, color: "#fff", marginBottom: 16, lineHeight: 1.12, letterSpacing: "-0.02em", textShadow: "0 2px 10px rgba(0,0,0,0.5)" }}>
+            <h2 style={{ fontFamily: "var(--serif)", fontStyle: "italic", fontSize: "clamp(24px, 4vw, 46px)", fontWeight: 400, color: "#fff", marginBottom: 16, lineHeight: 1.12, letterSpacing: "-0.02em", textShadow: "0 2px 10px rgba(0,0,0,0.5)" }}>
               Recover {inr(m.mLoss)}/month<br />
               <em style={{ color: "var(--gold)", textShadow: "0 0 30px rgba(200,169,110,0.5)" }}>with AI — in 30 days</em>
             </h2>
@@ -1209,7 +1280,7 @@ Write 4 punchy paragraphs: (1) Biggest bottleneck + its rupee impact. (2) Why le
             </p>
 
             {/* Pulsing CTA button */}
-            <div style={{ display: "flex", gap: 16, justifyContent: "center", flexWrap: "wrap", marginBottom: 36 }}>
+            <div className="vip-cta-buttons" style={{ display: "flex", gap: 16, justifyContent: "center", flexWrap: "wrap", marginBottom: 36 }}>
               <button className="btn btn-cta" onClick={() => window.open("https://calendly.com/charanrathod-inf/30min", "_blank")}>
                 <svg width="20" height="20" viewBox="0 0 20 20" fill="none" style={{ flexShrink: 0 }}>
                   <rect x="2" y="4" width="16" height="14" rx="2.5" stroke="currentColor" strokeWidth="1.5"/>
@@ -1224,7 +1295,7 @@ Write 4 punchy paragraphs: (1) Biggest bottleneck + its rupee impact. (2) Why le
             </div>
 
             {/* Trust row */}
-            <div style={{ display: "flex", gap: 28, justifyContent: "center", flexWrap: "wrap", paddingTop: 28, borderTop: "1px solid rgba(200,169,110,0.1)" }}>
+            <div className="vip-trust-row" style={{ display: "flex", gap: 28, justifyContent: "center", flexWrap: "wrap", paddingTop: 28, borderTop: "1px solid rgba(200,169,110,0.1)" }}>
               {["📅 30-Min Private Briefing", "🔒 100% Confidential", "✓ Zero Commitment"].map((t, i) => (
                 <span key={i} style={{ fontSize: 12, color: "rgba(255,255,255,0.25)", fontWeight: 500 }}>{t}</span>
               ))}
@@ -1274,13 +1345,13 @@ function LeadCapture({ formData, onSubmit }) {
   const scoreGlow  = ts.score < 42 ? "var(--neon-red-glow)" : "var(--amber-glow)";
 
   if (mode === "choose") return (
-    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "84px 24px 60px", position: "relative", zIndex: 1 }}>
+    <div className="lead-capture-wrap" style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "84px 24px 60px", position: "relative", zIndex: 1 }}>
       <div style={{ width: "100%", maxWidth: 520 }}>
 
         {/* Blurred teaser */}
         <div className="anim" style={{ position: "relative", marginBottom: 20, borderRadius: 16, overflow: "hidden", border: "1px solid rgba(200,169,110,0.2)", boxShadow: "0 20px 50px rgba(0,0,0,0.4)" }}>
-          <div style={{ filter: "blur(6px)", pointerEvents: "none", userSelect: "none", background: "rgba(255,255,255,0.04)", backdropFilter: "blur(10px)", padding: "24px 28px", display: "flex", gap: 28, alignItems: "center", flexWrap: "wrap" }}>
-            <div style={{ textAlign: "center" }}>
+          <div className="lead-capture-teaser" style={{ filter: "blur(6px)", pointerEvents: "none", userSelect: "none", background: "rgba(255,255,255,0.04)", backdropFilter: "blur(10px)", padding: "24px 28px", display: "flex", gap: 28, alignItems: "center", flexWrap: "wrap" }}>
+            <div style={{ textAlign: "center", flexShrink: 0 }}>
               <div style={{ fontFamily: "var(--serif)", fontStyle: "italic", fontSize: 52, color: scoreColor, lineHeight: 1, textShadow: `0 0 30px ${scoreGlow}` }}>{ts.score}</div>
               <div className="slabel" style={{ fontSize: 9, marginTop: 4 }}>Score</div>
             </div>
@@ -1316,7 +1387,7 @@ function LeadCapture({ formData, onSubmit }) {
         </div>
 
         {/* Auth card */}
-        <div className="glass-strong anim d2" style={{ padding: "36px" }}>
+        <div className="glass-strong anim d2 lead-capture-card" style={{ padding: "36px" }}>
           <div style={{ textAlign: "center", marginBottom: 30 }}>
             <h2 style={{ fontFamily: "var(--serif)", fontStyle: "italic", fontSize: 24, fontWeight: 400, marginBottom: 8, color: "#fff", letterSpacing: "-0.02em", textShadow: "0 2px 10px rgba(0,0,0,0.3)" }}>Unlock your free audit report</h2>
             <p style={{ fontSize: 13, color: "var(--white-40)" }}>Takes 5 seconds · No credit card · 100% free</p>
@@ -1356,10 +1427,10 @@ function LeadCapture({ formData, onSubmit }) {
   );
 
   return (
-    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "84px 24px 60px", position: "relative", zIndex: 1 }}>
+    <div className="lead-capture-wrap" style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "84px 24px 60px", position: "relative", zIndex: 1 }}>
       <div style={{ width: "100%", maxWidth: 460 }}>
         <button className="btn btn-ghost" style={{ fontSize: 13, padding: "8px 16px", marginBottom: 24 }} onClick={() => setMode("choose")}>← Back</button>
-        <div className="glass-strong" style={{ padding: "36px", borderTop: "1px solid rgba(200,169,110,0.4)" }}>
+        <div className="glass-strong lead-capture-card" style={{ padding: "36px", borderTop: "1px solid rgba(200,169,110,0.4)" }}>
           <h2 style={{ fontFamily: "var(--serif)", fontStyle: "italic", fontSize: 24, fontWeight: 400, marginBottom: 6, color: "#fff", letterSpacing: "-0.02em" }}>Your details</h2>
           <p style={{ fontSize: 14, color: "var(--white-40)", marginBottom: 28 }}>We'll send your full audit report to your email.</p>
 
