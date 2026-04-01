@@ -8,85 +8,291 @@ const supabase = createClient(
 );
 
 const G = `
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  body { background: #08090e; color: #e8eaf0; font-family: 'Inter', -apple-system, sans-serif; line-height: 1.6; -webkit-font-smoothing: antialiased; }
-  ::-webkit-scrollbar { width: 5px; } ::-webkit-scrollbar-track { background: #0f1017; } ::-webkit-scrollbar-thumb { background: #252535; border-radius: 3px; }
-  @keyframes fadeUp { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:translateY(0); } }
-  @keyframes spin { to { transform:rotate(360deg); } }
-  @keyframes pulse { 0%,100%{opacity:1;}50%{opacity:0.35;} }
-  .anim  { animation: fadeUp 0.42s ease both; }
-  .d1    { animation-delay:0.06s; } .d2 { animation-delay:0.12s; } .d3 { animation-delay:0.18s; } .d4 { animation-delay:0.24s; }
-  .card  { background:#0f1017; border:1px solid #1e2030; border-radius:14px; padding:22px; }
-  .card-blue { background:linear-gradient(135deg,rgba(94,96,255,0.06),rgba(14,165,233,0.04)); border:1px solid rgba(94,96,255,0.18); border-radius:14px; padding:22px; }
-  .btn   { display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 24px;border-radius:10px;font-size:15px;font-weight:500;cursor:pointer;font-family:inherit;transition:all 0.18s;border:none;letter-spacing:-0.01em; }
-  .bp    { background:#5E60FF;color:#fff; }
-  .bp:hover { background:#4e50e8;transform:translateY(-1px);box-shadow:0 4px 20px rgba(94,96,255,0.28); }
-  .bp:disabled { background:#1e2030;color:#3a3d55;cursor:not-allowed;transform:none;box-shadow:none; }
-  .bo    { background:transparent;color:#8b8fa8;border:1px solid #1e2030; }
-  .bo:hover { border-color:#5E60FF;color:#8b8eff; }
-  .bcta  { background:linear-gradient(135deg,#5E60FF,#0ea5e9);color:#fff;font-size:16px;padding:14px 34px;box-shadow:0 0 30px rgba(94,96,255,0.22); }
-  .bcta:hover { transform:translateY(-2px);box-shadow:0 8px 30px rgba(94,96,255,0.32); }
-  .fl    { display:block;font-size:13px;font-weight:500;color:#8b8fa8;margin-bottom:7px;letter-spacing:0.01em; }
-  .fh    { font-size:12px;color:#4a4d66;margin-top:5px;line-height:1.5; }
-  input[type=number],input[type=text],select { width:100%;background:#0a0b12;border:1px solid #1e2030;border-radius:9px;color:#e8eaf0;padding:12px 14px;font-size:15px;font-family:inherit;transition:border-color .2s,box-shadow .2s;appearance:none;-webkit-appearance:none; }
-  input:focus,select:focus { outline:none;border-color:#5E60FF;box-shadow:0 0 0 3px rgba(94,96,255,0.11); }
-  input::placeholder { color:#3a3d55; }
-  select { background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='7' viewBox='0 0 12 7'%3E%3Cpath fill='none' stroke='%238b8fa8' stroke-width='1.5' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px; }
-  select option { background:#0f1017; }
-  .choice-grid { display:flex;flex-wrap:wrap;gap:8px; }
-  .cb   { background:#0a0b12;border:1px solid #1e2030;border-radius:8px;padding:9px 15px;font-size:14px;color:#6b6f88;cursor:pointer;transition:all .18s;font-family:inherit; }
-  .cb:hover { border-color:#2e3050;color:#c0c4dc; }
-  .cb.sel { border-color:#5E60FF;color:#8b8eff;background:rgba(94,96,255,0.08); }
-  .multi-hint { font-size:11px;color:#3a3d55;margin-bottom:8px;display:flex;align-items:center;gap:5px; }
-  .field { margin-bottom:20px; }
-  .slabel { font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#4a4d66;margin-bottom:12px; }
-  .mono { font-family:'JetBrains Mono',monospace;letter-spacing:-0.03em; }
-  .note { background:rgba(94,96,255,0.06);border-left:3px solid #5E60FF;border-radius:0 8px 8px 0;padding:10px 14px;font-size:13px;color:#8b8fa8;margin-top:8px;line-height:1.55; }
-  .warn { background:rgba(239,68,68,0.06);border-left:3px solid #ef4444;border-radius:0 8px 8px 0;padding:10px 14px;font-size:13px;color:#f87171;margin-top:8px;line-height:1.55; }
-  hr.div { border:none;border-top:1px solid #1e2030;margin:22px 0; }
-  .sdot  { width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;flex-shrink:0;transition:all .3s; }
-  .sline { flex:1;height:1px;background:#1e2030; }
-  .sline.on { background:#5E60FF; }
-  .spinner { width:20px;height:20px;border-radius:50%;border:2px solid #1e2030;border-top-color:#5E60FF;animation:spin .7s linear infinite;flex-shrink:0; }
-  .pill { display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:100px;font-size:12px;font-weight:500; }
-  .pc  { background:rgba(239,68,68,.12);color:#f87171;border:1px solid rgba(239,68,68,.2); }
-  .ph  { background:rgba(245,158,11,.12);color:#fbbf24;border:1px solid rgba(245,158,11,.2); }
-  .pm  { background:rgba(94,96,255,.12);color:#818cf8;border:1px solid rgba(94,96,255,.2); }
-  .pg  { background:rgba(16,185,129,.12);color:#34d399;border:1px solid rgba(16,185,129,.2); }
-  .nav { position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(8,9,14,.88);backdrop-filter:blur(12px);border-bottom:1px solid #1e2030;display:flex;align-items:center;padding:0 24px;height:60px; }
+
+  :root {
+    --bg:        #F2F0EB;
+    --bg2:       #E8E5DF;
+    --surface:   #FAFAF8;
+    --navy:      #0E1728;
+    --navy2:     #1A2640;
+    --blue:      #004EEB;
+    --blue-dim:  rgba(0,78,235,0.07);
+    --blue-mid:  rgba(0,78,235,0.15);
+    --teal:      #0A7A5E;
+    --teal-dim:  rgba(10,122,94,0.08);
+    --gold:      #92400E;
+    --gold-dim:  rgba(146,64,14,0.08);
+    --red:       #991B1B;
+    --red-dim:   rgba(153,27,27,0.07);
+    --text:      #141820;
+    --sub:       #4A5268;
+    --muted:     #8590A8;
+    --border:    #D4D0C8;
+    --border2:   #E4E1D8;
+    --serif:     'Instrument Serif', Georgia, serif;
+    --sans:      'Plus Jakarta Sans', -apple-system, sans-serif;
+    --shadow-sm: 0 1px 3px rgba(14,23,40,0.07), 0 1px 2px rgba(14,23,40,0.04);
+    --shadow-md: 0 4px 16px rgba(14,23,40,0.09), 0 2px 4px rgba(14,23,40,0.05);
+    --shadow-lg: 0 16px 48px rgba(14,23,40,0.12), 0 4px 12px rgba(14,23,40,0.06);
+    --grain: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg2); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  @keyframes fadeUp  { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes fadeIn  { from { opacity:0; } to { opacity:1; } }
+  @keyframes pulse   { 0%,100%{opacity:1;} 50%{opacity:0.45;} }
+  @keyframes spin    { to { transform:rotate(360deg); } }
+  @keyframes dash    { from { stroke-dashoffset: 900; } to { stroke-dashoffset: 0; } }
+  @keyframes needlePop { from { transform: rotate(-90deg) scaleY(0); } to { transform: rotate(var(--angle)) scaleY(1); } }
+
+  .anim  { animation: fadeUp 0.5s cubic-bezier(0.22,1,0.36,1) both; }
+  .d1 { animation-delay:0.08s; } .d2 { animation-delay:0.16s; }
+  .d3 { animation-delay:0.24s; } .d4 { animation-delay:0.32s; }
+
+  /* ── Typography ── */
+  .serif { font-family: var(--serif); }
+
+  /* ── Cards ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 24px;
+    box-shadow: var(--shadow-sm);
+  }
+  .card-ink {
+    background: var(--navy);
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 6px;
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+  }
+  .card-ink::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: var(--grain);
+    pointer-events: none;
+    opacity: 0.6;
+  }
+  .card-ruled {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-top: 3px solid var(--navy);
+    border-radius: 0 0 6px 6px;
+    padding: 24px;
+    box-shadow: var(--shadow-sm);
+  }
+  .card-blue {
+    background: var(--blue-dim);
+    border: 1px solid var(--blue-mid);
+    border-radius: 6px;
+    padding: 24px;
+  }
+  .card-teal {
+    background: var(--teal-dim);
+    border: 1px solid rgba(10,122,94,0.2);
+    border-radius: 6px;
+    padding: 24px;
+  }
+
+  /* ── Buttons ── */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    gap: 8px; padding: 11px 22px; border-radius: 5px;
+    font-size: 14px; font-weight: 600; cursor: pointer;
+    font-family: var(--sans); transition: all 0.15s; border: none;
+    letter-spacing: 0.01em;
+  }
+  .bp { background: var(--blue); color: #fff; }
+  .bp:hover { background: #0041CC; transform: scale(1.015); }
+  .bp:disabled { background: var(--border); color: var(--muted); cursor: not-allowed; transform: none; }
+  .bo {
+    background: transparent; color: var(--sub);
+    border: 1px solid var(--border);
+  }
+  .bo:hover { border-color: var(--navy); color: var(--text); }
+  .bcta {
+    background: var(--navy);
+    color: #fff; font-size: 15px; padding: 14px 32px;
+    position: relative; overflow: hidden;
+    box-shadow: 0 3px 12px rgba(14,23,40,0.28);
+  }
+  .bcta::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: repeating-linear-gradient(
+      45deg,
+      transparent, transparent 3px,
+      rgba(255,255,255,0.025) 3px, rgba(255,255,255,0.025) 4px
+    );
+  }
+  .bcta:hover { background: var(--navy2); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(14,23,40,0.35); }
+
+  /* ── Form inputs ── */
+  .fl {
+    display: block; font-size: 13px; font-weight: 600;
+    color: var(--sub); margin-bottom: 8px; letter-spacing: 0.015em;
+  }
+  .fh { font-size: 12px; color: var(--muted); margin-top: 5px; line-height: 1.55; }
+
+  input[type=number], input[type=text], select {
+    width: 100%; background: var(--surface);
+    border: 1px solid var(--border); border-radius: 5px;
+    color: var(--text); padding: 11px 14px; font-size: 15px;
+    font-family: var(--sans); transition: border-color .18s, box-shadow .18s;
+    appearance: none; -webkit-appearance: none;
+  }
+  input:focus, select:focus {
+    outline: none; border-color: var(--blue);
+    box-shadow: 0 0 0 3px rgba(0,78,235,0.1);
+  }
+  input::placeholder { color: var(--border); }
+  select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='7' viewBox='0 0 12 7'%3E%3Cpath fill='none' stroke='%238590A8' stroke-width='1.5' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 14px center;
+    background-color: var(--surface); padding-right: 36px;
+  }
+  select option { background: var(--surface); color: var(--text); }
+
+  /* ── Choice buttons ── */
+  .choice-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+  .cb {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 5px; padding: 9px 14px; font-size: 14px;
+    color: var(--sub); cursor: pointer; transition: all .15s;
+    font-family: var(--sans); font-weight: 500;
+  }
+  .cb:hover { border-color: var(--navy); color: var(--text); }
+  .cb.sel {
+    border-color: var(--blue); color: var(--blue);
+    background: var(--blue-dim);
+    box-shadow: inset 0 0 0 1px var(--blue);
+  }
+  .multi-hint {
+    font-size: 11px; color: var(--muted); margin-bottom: 8px;
+    display: flex; align-items: center; gap: 5px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase;
+  }
+  .field { margin-bottom: 20px; }
+
+  /* ── Labels / misc ── */
+  .slabel {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--muted); margin-bottom: 10px;
+  }
+  .mono { font-family: 'SF Mono', 'Fira Code', 'Courier New', monospace; letter-spacing: -0.02em; }
+  .note {
+    background: var(--teal-dim); border-left: 3px solid var(--teal);
+    border-radius: 0 5px 5px 0; padding: 10px 14px;
+    font-size: 13px; color: var(--teal); margin-top: 8px; line-height: 1.55;
+  }
+  .warn {
+    background: var(--red-dim); border-left: 3px solid var(--red);
+    border-radius: 0 5px 5px 0; padding: 10px 14px;
+    font-size: 13px; color: var(--red); margin-top: 8px; line-height: 1.55;
+  }
+  hr.div { border: none; border-top: 1px solid var(--border2); margin: 22px 0; }
+
+  /* ── Step indicator ── */
+  .sdot {
+    width: 30px; height: 30px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; flex-shrink: 0; transition: all .3s;
+  }
+  .sline { flex: 1; height: 1px; background: var(--border2); }
+  .sline.on { background: var(--navy); }
+  .spinner {
+    width: 20px; height: 20px; border-radius: 50%;
+    border: 2px solid var(--border); border-top-color: var(--blue);
+    animation: spin .7s linear infinite; flex-shrink: 0;
+  }
+
+  /* ── Pills ── */
+  .pill {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 3px 10px; border-radius: 3px; font-size: 11px;
+    font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+  }
+  .pc { background: var(--red-dim); color: var(--red); border: 1px solid rgba(153,27,27,0.15); }
+  .ph { background: var(--gold-dim); color: var(--gold); border: 1px solid rgba(146,64,14,0.15); }
+  .pm { background: var(--blue-dim); color: var(--blue); border: 1px solid var(--blue-mid); }
+  .pg { background: var(--teal-dim); color: var(--teal); border: 1px solid rgba(10,122,94,0.2); }
+
+  /* ── Nav ── */
+  .nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    background: rgba(242,240,235,0.92); backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--border); display: flex;
+    align-items: center; padding: 0 28px; height: 58px;
+  }
+
+  /* ── Stat card ── */
+  .stat-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 6px; padding: 18px 20px; box-shadow: var(--shadow-sm);
+  }
+
+  /* ── Risk meter ── */
+  .risk-meter-track {
+    height: 10px; border-radius: 2px; overflow: hidden;
+    display: flex; position: relative;
+    box-shadow: inset 0 1px 3px rgba(14,23,40,0.12);
+  }
+  .risk-meter-needle {
+    position: absolute; top: -8px; width: 2px; height: 26px;
+    background: var(--navy); border-radius: 2px;
+    transform: translateX(-50%);
+    transition: left 1.6s cubic-bezier(0.34,1.56,0.64,1);
+    box-shadow: 0 2px 8px rgba(14,23,40,0.3);
+  }
+  .risk-meter-needle::after {
+    content: '';
+    position: absolute; bottom: -4px; left: 50%;
+    transform: translateX(-50%);
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--navy);
+  }
 `;
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
-
-/** Toggle a value in/out of an array field */
 function toggleMulti(data, field, val) {
   const arr = Array.isArray(data[field]) ? data[field] : [];
   return arr.includes(val) ? arr.filter(v => v !== val) : [...arr, val];
 }
-
-/** Check if an array field has a specific value */
 function hasVal(data, field, val) {
   const arr = Array.isArray(data[field]) ? data[field] : [];
   return arr.includes(val);
 }
-
-/** Stringify an array field for prompts / display */
 function joinField(data, field) {
   const arr = Array.isArray(data[field]) ? data[field] : data[field] ? [data[field]] : [];
   return arr.join(", ") || "not specified";
 }
 
-// ── Single-select choice button (unchanged behaviour) ────────────────────────
+// ── Choice Buttons ────────────────────────────────────────────────────────────
 function CB({ val, label, hint, field, data, upd }) {
+  const sel = data[field] === val;
   return (
-    <button className={`cb ${data[field] === val ? "sel" : ""}`} onClick={() => upd(field, val)}>
-      {label}{hint && <span style={{ color: data[field] === val ? "#6e71c4" : "#3a3d55", marginLeft: 5, fontSize: 12 }}>{hint}</span>}
+    <button className={`cb ${sel ? "sel" : ""}`} onClick={() => upd(field, val)}>
+      {label}
+      {hint && <span style={{ color: sel ? "var(--blue)" : "var(--muted)", marginLeft: 5, fontSize: 12, fontWeight: 400 }}>{hint}</span>}
     </button>
   );
 }
 
-// ── Multi-select choice button (new) ────────────────────────────────────────
 function MCB({ val, label, hint, field, data, upd }) {
   const selected = hasVal(data, field, val);
   return (
@@ -94,79 +300,112 @@ function MCB({ val, label, hint, field, data, upd }) {
       className={`cb ${selected ? "sel" : ""}`}
       onClick={() => upd(field, toggleMulti(data, field, val))}
     >
-      <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
-        {/* tiny checkbox indicator */}
+      <span style={{ display: "inline-flex", alignItems: "center", gap: 7 }}>
         <span style={{
-          width: 13, height: 13, borderRadius: 3, flexShrink: 0, display: "inline-flex",
-          alignItems: "center", justifyContent: "center",
-          border: `1.5px solid ${selected ? "#5E60FF" : "#2e3050"}`,
-          background: selected ? "#5E60FF" : "transparent",
+          width: 14, height: 14, borderRadius: 3, flexShrink: 0,
+          display: "inline-flex", alignItems: "center", justifyContent: "center",
+          border: `1.5px solid ${selected ? "var(--blue)" : "var(--border)"}`,
+          background: selected ? "var(--blue)" : "transparent",
           transition: "all .15s",
         }}>
-          {selected && <svg width="8" height="6" viewBox="0 0 8 6" fill="none"><path d="M1 3l2 2 4-4" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+          {selected && (
+            <svg width="8" height="6" viewBox="0 0 8 6" fill="none">
+              <path d="M1 3l2 2 4-4" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          )}
         </span>
         {label}
       </span>
-      {hint && <span style={{ color: selected ? "#6e71c4" : "#3a3d55", marginLeft: 5, fontSize: 12 }}>{hint}</span>}
+      {hint && <span style={{ color: selected ? "var(--blue)" : "var(--muted)", marginLeft: 6, fontSize: 12, fontWeight: 400 }}>{hint}</span>}
     </button>
   );
 }
 
-function Logo({ size = 18 }) {
+// ── Logo ──────────────────────────────────────────────────────────────────────
+function Logo({ size = 17, light = false }) {
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
-      <div style={{ width: size + 8, height: size + 8, borderRadius: 8, background: "linear-gradient(135deg,#5E60FF,#0ea5e9)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: size * 0.7, fontWeight: 700, color: "#fff", flexShrink: 0 }}>E</div>
-      <span style={{ fontSize: size + 1, fontWeight: 700, letterSpacing: "-0.03em", color: "#e8eaf0" }}>Enrollment<span style={{ color: "#5E60FF" }}>X</span></span>
+    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+      <div style={{
+        width: size + 10, height: size + 10, borderRadius: 5,
+        background: light ? "rgba(255,255,255,0.12)" : "var(--navy)",
+        border: light ? "1px solid rgba(255,255,255,0.2)" : "none",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        flexShrink: 0,
+      }}>
+        <span style={{ fontSize: size * 0.65, fontWeight: 800, color: light ? "#fff" : "#F2F0EB", fontFamily: "var(--serif)", fontStyle: "italic" }}>E</span>
+      </div>
+      <span style={{
+        fontSize: size + 1, fontWeight: 700, letterSpacing: "-0.02em",
+        color: light ? "#fff" : "var(--text)", fontFamily: "var(--sans)",
+      }}>
+        Enrollment<span style={{ color: light ? "rgba(255,255,255,0.55)" : "var(--blue)" }}>X</span>
+      </span>
     </div>
   );
 }
 
+// ── Nav ───────────────────────────────────────────────────────────────────────
 function Nav({ user, onSignOut }) {
   return (
     <nav className="nav">
       <Logo />
-      <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 12 }}>
+      <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 14 }}>
         {user && (
           <>
-            <span style={{ fontSize: 13, color: "#6b6f88" }}>{user.email}</span>
+            <span style={{ fontSize: 13, color: "var(--muted)" }}>{user.email}</span>
             <button className="btn bo" style={{ fontSize: 13, padding: "6px 14px" }} onClick={onSignOut}>Sign out</button>
           </>
         )}
         {!user && (
-          <div style={{ fontSize: 13, color: "#3a3d55", fontWeight: 500 }}>AI Audit System</div>
+          <div style={{ fontSize: 12, color: "var(--muted)", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase" }}>AI Audit System</div>
         )}
       </div>
     </nav>
   );
 }
 
+// ── Landing ───────────────────────────────────────────────────────────────────
 function Landing({ onStart }) {
   return (
-    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "100px 24px 60px", position: "relative", overflow: "hidden" }}>
-      <div style={{ position: "absolute", top: "5%", left: "50%", transform: "translateX(-50%)", width: 700, height: 350, background: "radial-gradient(ellipse,rgba(94,96,255,0.1) 0%,transparent 70%)", pointerEvents: "none" }} />
-      <div style={{ maxWidth: 660, textAlign: "center", position: "relative" }}>
-        <div className="anim" style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(94,96,255,0.08)", border: "1px solid rgba(94,96,255,0.2)", borderRadius: 100, padding: "6px 16px", marginBottom: 32 }}>
-          <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#5E60FF", animation: "pulse 2s infinite", display: "inline-block" }} />
-          <span style={{ fontSize: 13, color: "#8b8eff", fontWeight: 500 }}>Free · No credit card · 2 minutes</span>
+    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "100px 24px 80px", position: "relative", overflow: "hidden" }}>
+      {/* Subtle texture overlay */}
+      <div style={{ position: "fixed", inset: 0, backgroundImage: "var(--grain)", pointerEvents: "none", opacity: 0.4 }} />
+
+      {/* Decorative rule lines */}
+      <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: "var(--navy)" }} />
+
+      <div style={{ maxWidth: 680, textAlign: "center", position: "relative" }}>
+        <div className="anim" style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 3, padding: "5px 14px", marginBottom: 36, boxShadow: "var(--shadow-sm)" }}>
+          <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--teal)", animation: "pulse 2s infinite", display: "inline-block" }} />
+          <span style={{ fontSize: 12, color: "var(--sub)", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase" }}>Free · No credit card · 2 minutes</span>
         </div>
-        <h1 className="anim d1" style={{ fontSize: "clamp(32px,5.5vw,56px)", fontWeight: 700, lineHeight: 1.12, letterSpacing: "-0.03em", marginBottom: 20 }}>
-          Find out exactly how much revenue<br />
-          <span style={{ background: "linear-gradient(90deg,#5E60FF,#0ea5e9)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-            your agency is losing today
-          </span>
+
+        <h1 className="anim d1 serif" style={{ fontSize: "clamp(36px, 5.5vw, 62px)", fontWeight: 400, lineHeight: 1.1, marginBottom: 24, color: "var(--navy)", fontStyle: "italic" }}>
+          Find out exactly how much<br />
+          revenue your agency is<br />
+          <span style={{ fontStyle: "normal", fontSize: "0.92em" }}>losing <em>right now</em></span>
         </h1>
-        <p className="anim d2" style={{ fontSize: 17, color: "#6b6f88", lineHeight: 1.8, maxWidth: 500, margin: "0 auto 38px" }}>
-          Answer 15 quick questions about your study abroad business. EnrollmentX AI analyses your data and delivers a personalised audit — with exact ₹ figures and a step-by-step AI fix plan.
+
+        <p className="anim d2" style={{ fontSize: 17, color: "var(--sub)", lineHeight: 1.85, maxWidth: 520, margin: "0 auto 44px", fontWeight: 400 }}>
+          Answer 15 questions about your study abroad business. EnrollmentX AI analyses your operations and delivers a confidential audit — with exact ₹ figures and a step-by-step AI fix plan.
         </p>
+
         <div className="anim d3">
-          <button className="btn bcta" onClick={onStart}>Start My Free Audit →</button>
-          <p style={{ fontSize: 13, color: "#3a3d55", marginTop: 12 }}>Takes about 2–3 minutes · 100% confidential</p>
+          <button className="btn bcta" onClick={onStart} style={{ fontSize: 15, padding: "15px 38px" }}>
+            Start My Free Audit →
+          </button>
+          <p style={{ fontSize: 12, color: "var(--muted)", marginTop: 14, letterSpacing: "0.04em" }}>Takes 2–3 minutes · 100% confidential</p>
         </div>
-        <div className="anim d4" style={{ display: "flex", gap: 0, justifyContent: "center", marginTop: 56, borderTop: "1px solid #1e2030", paddingTop: 36, flexWrap: "wrap" }}>
-          {[["₹2.4Cr+", "Average annual revenue leak found per agency"], ["87%", "Of agencies miss key AI automation opportunities"], ["2–3 min", "To get your full personalised report"]].map(([n, d]) => (
-            <div key={n} style={{ flex: 1, minWidth: 140, textAlign: "center", padding: "0 20px" }}>
-              <div className="mono" style={{ fontSize: 28, fontWeight: 700, color: "#e8eaf0" }}>{n}</div>
-              <div style={{ fontSize: 13, color: "#4a4d66", marginTop: 5, lineHeight: 1.5 }}>{d}</div>
+
+        <div className="anim d4" style={{ display: "flex", gap: 0, justifyContent: "center", marginTop: 64, borderTop: "1px solid var(--border)", paddingTop: 40, flexWrap: "wrap" }}>
+          {[
+            ["₹2.4Cr+", "Average annual revenue leak found per agency"],
+            ["87%", "Of agencies miss key AI automation opportunities"],
+            ["2–3 min", "To get your full personalised report"],
+          ].map(([n, d]) => (
+            <div key={n} style={{ flex: 1, minWidth: 160, textAlign: "center", padding: "0 24px", borderRight: "1px solid var(--border2)" }}>
+              <div className="mono serif" style={{ fontSize: 30, fontWeight: 400, color: "var(--navy)", fontStyle: "italic" }}>{n}</div>
+              <div style={{ fontSize: 13, color: "var(--muted)", marginTop: 6, lineHeight: 1.55 }}>{d}</div>
             </div>
           ))}
         </div>
@@ -175,6 +414,7 @@ function Landing({ onStart }) {
   );
 }
 
+// ── Steps ─────────────────────────────────────────────────────────────────────
 const STEPS = [
   { title: "Lead Generation", sub: "How enquiries come in and how fast you respond" },
   { title: "Sales & Follow-up", sub: "How your team handles and converts leads" },
@@ -183,8 +423,6 @@ const STEPS = [
   { title: "Operations & Tools", sub: "Systems and tools your agency currently uses" },
 ];
 
-// ── Step 0 — Lead Generation ─────────────────────────────────────────────────
-// leadSource → MULTI-SELECT (agencies use multiple channels)
 function Step0({ d, u }) {
   return <>
     <div className="field">
@@ -192,11 +430,10 @@ function Step0({ d, u }) {
       <input type="number" min="0" placeholder="e.g. 150" value={d.monthlyLeads || ""} onChange={e => u("monthlyLeads", e.target.value)} />
       <p className="fh">Count all channels: walk-ins, calls, WhatsApp, website forms, social media DMs, etc.</p>
     </div>
-
     <div className="field">
       <label className="fl">Where do most of your leads come from?</label>
       <p className="multi-hint">
-        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><rect x="1" y="1" width="10" height="10" rx="2" stroke="#3a3d55" strokeWidth="1.3"/><path d="M3.5 6l2 2 3-3" stroke="#3a3d55" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>
+        <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><rect x="1" y="1" width="10" height="10" rx="2" stroke="currentColor" strokeWidth="1.3"/><path d="M3.5 6l2 2 3-3" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>
         Select all that apply
       </p>
       <div className="choice-grid">
@@ -209,7 +446,6 @@ function Step0({ d, u }) {
         ].map(([v, l, h]) => <MCB key={v} val={v} label={l} hint={h} field="leadSource" data={d} upd={u} />)}
       </div>
     </div>
-
     <div className="field">
       <label className="fl">How long does it typically take your team to respond to a new enquiry? (in minutes)</label>
       <input type="number" min="0" placeholder="e.g. 30" value={d.responseTime || ""} onChange={e => u("responseTime", e.target.value)} />
@@ -217,7 +453,6 @@ function Step0({ d, u }) {
       {Number(d.responseTime) > 10 && <div className="warn">⚠ Leads contacted after 10 minutes are 7× less likely to convert. This will be penalised in your audit score.</div>}
       {Number(d.responseTime) <= 10 && Number(d.responseTime) > 0 && <div className="note">✓ Great! You're within the optimal response window.</div>}
     </div>
-
     <div className="field">
       <label className="fl">What percentage of your leads actually enroll? (Your conversion rate)</label>
       <input type="number" min="0" max="100" placeholder="e.g. 8" value={d.conversionRate || ""} onChange={e => u("conversionRate", e.target.value)} />
@@ -227,17 +462,14 @@ function Step0({ d, u }) {
   </>;
 }
 
-// ── Step 1 — Sales & Follow-up ───────────────────────────────────────────────
-// followUpMethod → MULTI-SELECT (teams use several methods at once)
 function Step1({ d, u }) {
   const methods = Array.isArray(d.followUpMethod) ? d.followUpMethod : [];
   const noneSelected = methods.includes("none");
-
   return <>
     <div className="field">
       <label className="fl">How does your team follow up with leads after the first contact?</label>
       <p className="multi-hint">
-        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><rect x="1" y="1" width="10" height="10" rx="2" stroke="#3a3d55" strokeWidth="1.3"/><path d="M3.5 6l2 2 3-3" stroke="#3a3d55" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>
+        <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><rect x="1" y="1" width="10" height="10" rx="2" stroke="currentColor" strokeWidth="1.3"/><path d="M3.5 6l2 2 3-3" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>
         Select all that apply
       </p>
       <div className="choice-grid">
@@ -247,23 +479,17 @@ function Step1({ d, u }) {
           ["crm", "CRM / Automation", "— automated sequences"],
           ["email", "Email", "— campaigns or one-off"],
           ["none", "No regular follow-up", ""],
-        ].map(([v, l, h]) => (
-          <MCB key={v} val={v} label={l} hint={h} field="followUpMethod" data={d} upd={u} />
-        ))}
+        ].map(([v, l, h]) => <MCB key={v} val={v} label={l} hint={h} field="followUpMethod" data={d} upd={u} />)}
       </div>
       {noneSelected && <div className="warn">⚠ No follow-up process is one of the top 3 causes of revenue loss in study abroad agencies.</div>}
-      {!noneSelected && methods.length >= 2 && (
-        <div className="note">✓ Good — using {methods.length} follow-up channels increases your chances of reaching leads at the right moment.</div>
-      )}
+      {!noneSelected && methods.length >= 2 && <div className="note">✓ Good — using {methods.length} follow-up channels increases your chances of reaching leads at the right moment.</div>}
     </div>
-
-    <div className="field" style={{ marginTop: 4 }}>
+    <div className="field">
       <label className="fl">On average, how many follow-ups do you make per lead before giving up?</label>
       <input type="number" min="0" placeholder="e.g. 3" value={d.followUpCount || ""} onChange={e => u("followUpCount", e.target.value)} />
       <p className="fh">Research shows 80% of sales require 5+ follow-ups. Most agencies stop at 1–2.</p>
       {Number(d.followUpCount) > 0 && Number(d.followUpCount) < 4 && <div className="note">Consider increasing follow-ups — most conversions happen on the 4th–7th contact.</div>}
     </div>
-
     <div className="field">
       <label className="fl">At which stage do most of your leads go cold or stop responding?</label>
       <select value={d.dropOffStage || ""} onChange={e => u("dropOffStage", e.target.value)}>
@@ -279,7 +505,6 @@ function Step1({ d, u }) {
   </>;
 }
 
-// ── Step 2 — Team & Time (unchanged) ─────────────────────────────────────────
 function Step2({ d, u }) {
   return <>
     <div className="field">
@@ -301,7 +526,6 @@ function Step2({ d, u }) {
   </>;
 }
 
-// ── Step 3 — Marketing & Budget (unchanged) ───────────────────────────────────
 function Step3({ d, u }) {
   return <>
     <div className="field">
@@ -322,7 +546,7 @@ function Step3({ d, u }) {
         <CB val="high"   label="High"   hint="— mostly ready-to-enroll students" field="leadQuality" data={d} upd={u} />
       </div>
     </div>
-    <div className="field" style={{ marginTop: 4 }}>
+    <div className="field">
       <label className="fl">What is the average revenue your agency earns per enrolled student? (₹)</label>
       <input type="number" min="0" placeholder="e.g. 150000" value={d.revenuePerStudent || ""} onChange={e => u("revenuePerStudent", e.target.value)} />
       <p className="fh">Include service fees, commissions, application fees. Default is ₹1,50,000 if left blank.</p>
@@ -330,32 +554,28 @@ function Step3({ d, u }) {
   </>;
 }
 
-// ── Step 4 — Operations & Tools ───────────────────────────────────────────────
-// docHandling → MULTI-SELECT (mixed environments are common)
 function Step4({ d, u }) {
   const docs = Array.isArray(d.docHandling) ? d.docHandling : [];
   const hasManual = docs.includes("manual");
   const hasDigital = docs.includes("digital");
-
   return <>
     <div className="field">
       <label className="fl">How does your agency currently handle student documents?</label>
       <p className="multi-hint">
-        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><rect x="1" y="1" width="10" height="10" rx="2" stroke="#3a3d55" strokeWidth="1.3"/><path d="M3.5 6l2 2 3-3" stroke="#3a3d55" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>
+        <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><rect x="1" y="1" width="10" height="10" rx="2" stroke="currentColor" strokeWidth="1.3"/><path d="M3.5 6l2 2 3-3" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>
         Select all that apply
       </p>
       <div className="choice-grid">
-        <MCB val="manual"  label="Paper / physical files" hint="— printed docs, physical folders"  field="docHandling" data={d} upd={u} />
-        <MCB val="email"   label="Email attachments"      hint="— docs sent back and forth by email" field="docHandling" data={d} upd={u} />
-        <MCB val="drive"   label="Cloud storage"          hint="— Google Drive, Dropbox, OneDrive"   field="docHandling" data={d} upd={u} />
+        <MCB val="manual"  label="Paper / physical files"   hint="— printed docs, physical folders"     field="docHandling" data={d} upd={u} />
+        <MCB val="email"   label="Email attachments"        hint="— docs sent back and forth by email"  field="docHandling" data={d} upd={u} />
+        <MCB val="drive"   label="Cloud storage"            hint="— Google Drive, Dropbox, OneDrive"    field="docHandling" data={d} upd={u} />
         <MCB val="digital" label="Digital workflow / portal" hint="— structured checklists, auto-verify" field="docHandling" data={d} upd={u} />
       </div>
       {hasManual && !hasDigital && <div className="warn">⚠ Manual document handling adds 3–4 hours per student on average.</div>}
       {hasDigital && <div className="note">✓ Great — digital document handling gives you a strong operational base.</div>}
       {hasManual && hasDigital && <div className="note">You're in transition — digitising the remaining manual steps will save significant counselor time.</div>}
     </div>
-
-    <div className="field" style={{ marginTop: 4 }}>
+    <div className="field">
       <label className="fl">Does your agency use a CRM to track leads and follow-ups?</label>
       <div className="choice-grid">
         <CB val="yes"    label="Yes, actively" hint="— we track every lead in the CRM"           field="usesCRM" data={d} upd={u} />
@@ -367,7 +587,7 @@ function Step4({ d, u }) {
   </>;
 }
 
-// ── Audit Form ─────────────────────────────────────────────────────────────────
+// ── Audit Form ────────────────────────────────────────────────────────────────
 function AuditForm({ onSubmit }) {
   const [step, setStep] = useState(0);
   const [data, setData] = useState({});
@@ -386,26 +606,34 @@ function AuditForm({ onSubmit }) {
   return (
     <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", padding: "84px 20px 60px" }}>
       <div style={{ width: "100%", maxWidth: 580 }}>
-        <div style={{ marginBottom: 32 }}>
-          <div style={{ display: "flex", alignItems: "center", marginBottom: 14 }}>
+        {/* Step indicator */}
+        <div style={{ marginBottom: 28 }}>
+          <div style={{ display: "flex", alignItems: "center", marginBottom: 12 }}>
             {STEPS.map((s, i) => (
               <div key={i} style={{ display: "flex", alignItems: "center", flex: i < STEPS.length - 1 ? 1 : "none" }}>
-                <div className="sdot" style={{ background: i < step ? "#5E60FF" : i === step ? "rgba(94,96,255,0.12)" : "#0f1017", border: `${i === step ? "2px" : "1px"} solid ${i <= step ? "#5E60FF" : "#1e2030"}`, color: i < step ? "#fff" : i === step ? "#8b8eff" : "#3a3d55" }}>
-                  {i < step ? "✓" : i + 1}
+                <div className="sdot" style={{
+                  background: i < step ? "var(--navy)" : i === step ? "var(--blue-dim)" : "var(--surface)",
+                  border: `${i === step ? "2px" : "1px"} solid ${i <= step ? (i < step ? "var(--navy)" : "var(--blue)") : "var(--border)"}`,
+                  color: i < step ? "#fff" : i === step ? "var(--blue)" : "var(--muted)",
+                  fontSize: 12, fontWeight: 700,
+                }}>
+                  {i < step ? (
+                    <svg width="12" height="9" viewBox="0 0 12 9" fill="none"><path d="M1 4l3.5 3.5L11 1" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                  ) : i + 1}
                 </div>
                 {i < STEPS.length - 1 && <div className={`sline ${i < step ? "on" : ""}`} />}
               </div>
             ))}
           </div>
-          <div style={{ fontSize: 13, color: "#4a4d66" }}>
-            Step {step + 1} of {STEPS.length} — <span style={{ color: "#6b6f88", fontWeight: 500 }}>{STEPS[step].title}</span>
+          <div style={{ fontSize: 12, color: "var(--muted)", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase" }}>
+            Step {step + 1} of {STEPS.length} — <span style={{ color: "var(--sub)" }}>{STEPS[step].title}</span>
           </div>
         </div>
 
-        <div className="card anim" key={step}>
+        <div className="card anim" key={step} style={{ borderTop: "3px solid var(--navy)" }}>
           <div style={{ marginBottom: 24 }}>
-            <h2 style={{ fontSize: 20, fontWeight: 700, letterSpacing: "-0.02em", marginBottom: 4 }}>{STEPS[step].title}</h2>
-            <p style={{ fontSize: 14, color: "#6b6f88" }}>{STEPS[step].sub}</p>
+            <h2 className="serif" style={{ fontSize: 22, fontWeight: 400, fontStyle: "italic", marginBottom: 4, color: "var(--navy)" }}>{STEPS[step].title}</h2>
+            <p style={{ fontSize: 14, color: "var(--sub)" }}>{STEPS[step].sub}</p>
           </div>
           <StepComp d={data} u={upd} />
           <hr className="div" />
@@ -420,44 +648,58 @@ function AuditForm({ onSubmit }) {
               {step === 4 ? "Generate My Audit Report →" : "Continue →"}
             </button>
           </div>
-          {!ok() && <p style={{ fontSize: 12, color: "#3a3d55", textAlign: "center", marginTop: 10 }}>Please answer all questions above to continue</p>}
+          {!ok() && <p style={{ fontSize: 12, color: "var(--muted)", textAlign: "center", marginTop: 10 }}>Please answer all questions above to continue</p>}
         </div>
-
-       
       </div>
     </div>
   );
 }
 
+// ── Analyzing ─────────────────────────────────────────────────────────────────
 function Analyzing() {
   const [active, setActive] = useState(0);
   const tasks = [
-    { l: "Calculating your lead conversion gap",        d: "Comparing against the 15% industry benchmark…" },
-    { l: "Estimating monthly revenue leakage",           d: "Multiplying lost leads × revenue per student…" },
-    { l: "Quantifying time and operational waste",       d: "Measuring manual work cost at ₹200/hour…" },
-    { l: "Running AI bottleneck diagnosis",              d: "Identifying root causes of drop-offs…" },
-    { l: "Building your personalised action plan",       d: "Preparing specific AI solutions for your agency…" },
+    { l: "Calculating your lead conversion gap",    d: "Comparing against the 15% industry benchmark…" },
+    { l: "Estimating monthly revenue leakage",       d: "Multiplying lost leads × revenue per student…" },
+    { l: "Quantifying time and operational waste",   d: "Measuring manual work cost at ₹200/hour…" },
+    { l: "Running AI bottleneck diagnosis",          d: "Identifying root causes of drop-offs…" },
+    { l: "Building your personalised action plan",   d: "Preparing specific AI solutions for your agency…" },
   ];
   useEffect(() => {
     let i = 0;
     const t = setInterval(() => { i++; if (i < tasks.length) setActive(i); else clearInterval(t); }, 1100);
     return () => clearInterval(t);
   }, []);
+
   return (
-    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 40 }}>
-      <div style={{ maxWidth: 440, width: "100%", textAlign: "center" }}>
-        <div style={{ width: 52, height: 52, borderRadius: "50%", border: "2px solid #1e2030", borderTopColor: "#5E60FF", margin: "0 auto 28px", animation: "spin .9s linear infinite" }} />
-        <h2 style={{ fontSize: 21, fontWeight: 700, letterSpacing: "-0.02em", marginBottom: 8 }}>Analysing Your Agency</h2>
-        <p style={{ fontSize: 14, color: "#6b6f88", marginBottom: 36 }}>Your personalised audit is being built — takes about 5 seconds.</p>
-        <div style={{ textAlign: "left", display: "flex", flexDirection: "column", gap: 14 }}>
+    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 40, background: "var(--bg)" }}>
+      <div style={{ maxWidth: 460, width: "100%", textAlign: "center" }}>
+        {/* Premium spinner — crosshair style */}
+        <div style={{ position: "relative", width: 56, height: 56, margin: "0 auto 32px" }}>
+          <div style={{ position: "absolute", inset: 0, borderRadius: "50%", border: "1px solid var(--border2)" }} />
+          <div style={{ position: "absolute", inset: 0, borderRadius: "50%", border: "2px solid transparent", borderTopColor: "var(--navy)", animation: "spin .9s linear infinite" }} />
+          <div style={{ position: "absolute", inset: "18px", borderRadius: "50%", background: "var(--navy)" }} />
+        </div>
+        <h2 className="serif" style={{ fontSize: 26, fontWeight: 400, fontStyle: "italic", marginBottom: 8, color: "var(--navy)" }}>Analysing Your Agency</h2>
+        <p style={{ fontSize: 14, color: "var(--sub)", marginBottom: 40 }}>Your confidential audit is being compiled — takes about 5 seconds.</p>
+        <div style={{ textAlign: "left", display: "flex", flexDirection: "column", gap: 16 }}>
           {tasks.map((t, i) => (
-            <div key={i} style={{ display: "flex", gap: 14, alignItems: "flex-start", opacity: i <= active ? 1 : 0.2, transition: "opacity .4s" }}>
-              <div style={{ width: 22, height: 22, borderRadius: "50%", flexShrink: 0, marginTop: 1, background: i < active ? "#5E60FF" : i === active ? "rgba(94,96,255,0.15)" : "#0f1017", border: `1px solid ${i <= active ? "#5E60FF" : "#1e2030"}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, color: i < active ? "#fff" : "#5E60FF" }}>
-                {i < active ? "✓" : i === active ? <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#5E60FF", display: "block", animation: "pulse 1s infinite" }} /> : ""}
+            <div key={i} style={{ display: "flex", gap: 14, alignItems: "flex-start", opacity: i <= active ? 1 : 0.25, transition: "opacity .4s" }}>
+              <div style={{
+                width: 22, height: 22, borderRadius: "50%", flexShrink: 0, marginTop: 1,
+                background: i < active ? "var(--navy)" : i === active ? "var(--blue-dim)" : "var(--surface)",
+                border: `1px solid ${i <= active ? (i < active ? "var(--navy)" : "var(--blue)") : "var(--border)"}`,
+                display: "flex", alignItems: "center", justifyContent: "center",
+              }}>
+                {i < active ? (
+                  <svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4l2.5 2.5L9 1" stroke="#fff" strokeWidth="1.5" strokeLinecap="round"/></svg>
+                ) : i === active ? (
+                  <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--blue)", display: "block", animation: "pulse 1s infinite" }} />
+                ) : null}
               </div>
               <div>
-                <div style={{ fontSize: 14, fontWeight: 500, color: i <= active ? "#e8eaf0" : "#3a3d55" }}>{t.l}</div>
-                {i === active && <div style={{ fontSize: 12, color: "#5E60FF", marginTop: 2 }}>{t.d}</div>}
+                <div style={{ fontSize: 14, fontWeight: 500, color: i <= active ? "var(--text)" : "var(--muted)" }}>{t.l}</div>
+                {i === active && <div style={{ fontSize: 12, color: "var(--blue)", marginTop: 3, fontWeight: 500 }}>{t.d}</div>}
               </div>
             </div>
           ))}
@@ -467,7 +709,7 @@ function Analyzing() {
   );
 }
 
-// ── calc — updated to handle array fields ─────────────────────────────────────
+// ── calc ──────────────────────────────────────────────────────────────────────
 function calc(d) {
   const leads   = Number(d.monthlyLeads) || 0;
   const conv    = Number(d.conversionRate) || 0;
@@ -479,7 +721,6 @@ function calc(d) {
   const ad      = Number(d.adSpend) || 0;
   const cpl     = Number(d.costPerLead) || (leads > 0 ? Math.round(ad / leads) : 0);
 
-  // Normalise array fields
   const followUpArr = Array.isArray(d.followUpMethod) ? d.followUpMethod : (d.followUpMethod ? [d.followUpMethod] : []);
   const docArr      = Array.isArray(d.docHandling)    ? d.docHandling    : (d.docHandling    ? [d.docHandling]    : []);
 
@@ -491,9 +732,9 @@ function calc(d) {
   const aLoss   = mLoss * 12;
   const mWaste  = (manual / 100) * (tpl / 60) * leads;
   const wWaste  = Math.round(mWaste / 4.33);
-  const mWasteCost  = Math.round(mWaste * 200);
-  const rtPenMoney  = penalty ? Math.round(conv * 0.3 * leads * rps / 100) : 0;
-  const adWasted    = Math.round(ad * (1 - effConv / 100));
+  const mWasteCost = Math.round(mWaste * 200);
+  const rtPenMoney = penalty ? Math.round(conv * 0.3 * leads * rps / 100) : 0;
+  const adWasted   = Math.round(ad * (1 - effConv / 100));
 
   let score = 100;
   if (effConv < BENCH)                    score -= Math.min(28, Math.round((BENCH - effConv) * 2));
@@ -516,64 +757,94 @@ function calc(d) {
 
 const inr = n => "₹" + Number(n).toLocaleString("en-IN");
 
-function Gauge({ score }) {
-  const col = score >= 68 ? "#10b981" : score >= 42 ? "#f59e0b" : "#ef4444";
-  const lbl = score >= 68 ? "Moderate" : score >= 42 ? "At Risk" : "Critical";
-  const r = 52, c = 2 * Math.PI * r, off = c - (score / 100) * c;
+// ── Risk Meter (replaces circular gauge) ──────────────────────────────────────
+function RiskMeter({ score }) {
+  const [animated, setAnimated] = useState(false);
+  useEffect(() => { setTimeout(() => setAnimated(true), 300); }, []);
+
+  const pct   = score / 100;
+  const lbl   = score >= 68 ? "Moderate" : score >= 42 ? "At Risk" : "Critical";
+  const color = score >= 68 ? "var(--teal)" : score >= 42 ? "var(--gold)" : "var(--red)";
+  const pillCls = score >= 68 ? "pg" : score >= 42 ? "ph" : "pc";
+
   return (
-    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
-      <svg width={128} height={128} viewBox="0 0 128 128">
-        <circle cx={64} cy={64} r={r} fill="none" stroke="#1e2030" strokeWidth={10} />
-        <circle cx={64} cy={64} r={r} fill="none" stroke={col} strokeWidth={10}
-          strokeDasharray={c} strokeDashoffset={off} strokeLinecap="round"
-          transform="rotate(-90 64 64)" style={{ transition: "stroke-dashoffset 1.4s ease" }} />
-        <text x={64} y={60} textAnchor="middle" fill="#e8eaf0" fontSize={25} fontWeight={700} fontFamily="'JetBrains Mono',monospace">{score}</text>
-        <text x={64} y={77} textAnchor="middle" fill={col} fontSize={12}>/100</text>
-      </svg>
-      <span className={`pill ${score >= 68 ? "pg" : score >= 42 ? "ph" : "pc"}`} style={{ fontSize: 13 }}>{lbl}</span>
+    <div style={{ minWidth: 220 }}>
+      <div className="slabel" style={{ marginBottom: 14 }}>Revenue Risk Meter</div>
+      <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 14 }}>
+        <div style={{ fontSize: 52, fontWeight: 400, color: "var(--navy)", fontFamily: "var(--serif)", fontStyle: "italic", lineHeight: 1 }}>{score}</div>
+        <div>
+          <div style={{ fontSize: 13, color: "var(--muted)", marginBottom: 4 }}>out of 100</div>
+          <span className={`pill ${pillCls}`}>{lbl}</span>
+        </div>
+      </div>
+
+      {/* Segmented bar */}
+      <div style={{ position: "relative", marginBottom: 10 }}>
+        <div className="risk-meter-track">
+          <div style={{ flex: 42, background: "linear-gradient(90deg, #FCA5A5, #EF4444)", opacity: 0.85 }} />
+          <div style={{ flex: 26, background: "linear-gradient(90deg, #FCD34D, #D97706)", opacity: 0.85 }} />
+          <div style={{ flex: 32, background: "linear-gradient(90deg, #6EE7B7, #0A7A5E)", opacity: 0.85 }} />
+        </div>
+        <div className="risk-meter-needle" style={{ left: `${animated ? pct * 100 : 0}%` }} />
+      </div>
+      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10, color: "var(--muted)", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase" }}>
+        <span>Critical</span>
+        <span>At Risk</span>
+        <span>Moderate</span>
+      </div>
     </div>
   );
 }
 
-function Stat({ label, value, sub, vc = "#e8eaf0" }) {
+// ── Stat Card ─────────────────────────────────────────────────────────────────
+function Stat({ label, value, sub, vc = "var(--text)" }) {
   return (
-    <div className="card" style={{ padding: "18px 20px" }}>
-      <div style={{ fontSize: 11, color: "#4a4d66", marginBottom: 7, fontWeight: 500, letterSpacing: "0.04em", textTransform: "uppercase" }}>{label}</div>
-      <div className="mono" style={{ fontSize: 24, color: vc, marginBottom: 4, fontWeight: 500 }}>{value}</div>
-      {sub && <div style={{ fontSize: 12, color: "#4a4d66", lineHeight: 1.5 }}>{sub}</div>}
+    <div className="stat-card">
+      <div className="slabel" style={{ marginBottom: 8 }}>{label}</div>
+      <div className="mono" style={{ fontSize: 26, color: vc, marginBottom: 4, fontWeight: 600 }}>{value}</div>
+      {sub && <div style={{ fontSize: 12, color: "var(--muted)", lineHeight: 1.5 }}>{sub}</div>}
     </div>
   );
 }
 
+// ── Bar ───────────────────────────────────────────────────────────────────────
 function Bar({ label, val, pct, color, note }) {
+  const [animated, setAnimated] = useState(false);
+  useEffect(() => { setTimeout(() => setAnimated(true), 400); }, []);
+
   return (
-    <div style={{ marginBottom: 18 }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 6 }}>
-        <span style={{ fontSize: 14, color: "#8b8fa8" }}>{label}</span>
-        <span className="mono" style={{ fontSize: 14, color, fontWeight: 500 }}>{val}</span>
+    <div style={{ marginBottom: 20 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 8 }}>
+        <span className="serif" style={{ fontSize: 15, color: "var(--text)", fontStyle: "italic" }}>{label}</span>
+        <span className="mono" style={{ fontSize: 14, color, fontWeight: 600 }}>{val}</span>
       </div>
-      <div style={{ height: 6, background: "#1e2030", borderRadius: 4, overflow: "hidden" }}>
-        <div style={{ height: "100%", width: `${Math.min(pct, 100)}%`, background: color, borderRadius: 4, transition: "width 1.3s ease 0.2s" }} />
+      <div style={{ height: 4, background: "var(--border2)", borderRadius: 2, overflow: "hidden" }}>
+        <div style={{
+          height: "100%", width: `${animated ? Math.min(pct, 100) : 0}%`,
+          background: color, borderRadius: 2,
+          transition: "width 1.4s cubic-bezier(0.22,1,0.36,1) 0.2s",
+        }} />
       </div>
-      {note && <div style={{ fontSize: 12, color: "#3a3d55", marginTop: 4 }}>{note}</div>}
+      {note && <div style={{ fontSize: 12, color: "var(--muted)", marginTop: 5, lineHeight: 1.5 }}>{note}</div>}
     </div>
   );
 }
 
+// ── Opportunity Card ──────────────────────────────────────────────────────────
 function OppCard({ title, impact, priority, idx }) {
   const pc = priority === "CRITICAL" ? "pc" : priority === "HIGH" ? "ph" : "pm";
   return (
-    <div className="card" style={{ padding: "16px 20px", display: "flex", gap: 16, alignItems: "flex-start", animation: "fadeUp .4s ease both", animationDelay: `${idx * 0.07}s` }}>
+    <div className="card" style={{ padding: "18px 22px", display: "flex", gap: 18, alignItems: "flex-start", animation: "fadeUp .4s ease both", animationDelay: `${idx * 0.07}s` }}>
       <div style={{ flexShrink: 0, paddingTop: 2 }}><span className={`pill ${pc}`}>{priority}</span></div>
       <div style={{ flex: 1 }}>
-        <div style={{ fontWeight: 600, fontSize: 15, marginBottom: 5, color: "#e8eaf0" }}>{title}</div>
-        <div style={{ fontSize: 14, color: "#6b6f88", lineHeight: 1.65 }}>{impact}</div>
+        <div className="serif" style={{ fontWeight: 400, fontSize: 17, fontStyle: "italic", marginBottom: 5, color: "var(--navy)" }}>{title}</div>
+        <div style={{ fontSize: 14, color: "var(--sub)", lineHeight: 1.7 }}>{impact}</div>
       </div>
     </div>
   );
 }
 
-// ── Report — updated prompt to use array fields ───────────────────────────────
+// ── Report ────────────────────────────────────────────────────────────────────
 function Report({ fd, lead, onRestart }) {
   const m = calc(fd);
   const [aiTxt, setAiTxt] = useState("");
@@ -603,53 +874,41 @@ Agency data:
 Write 4 punchy paragraphs: (1) Biggest bottleneck + its rupee impact. (2) Why leads drop at "${fd.dropOffStage}" stage. (3) How response time + manual work compound the problem. (4) Top 2 AI fixes with estimated ROI. Use real numbers throughout.`;
 
     (async () => {
-  try {
-    const res = await fetch("/api/analyze", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        prompt,
-        businessName: lead?.agency || "",
-        email: lead?.email || "",
-        score: m.score,
-      }),
-    });
-    const data = await res.json();
-    const reportText = data.text || fallback();
-    setAiTxt(reportText);
+      try {
+        const res = await fetch("/api/analyze", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            prompt,
+            businessName: lead?.agency || "",
+            email: lead?.email || "",
+            score: m.score,
+          }),
+        });
+        const data = await res.json();
+        const reportText = data.text || fallback();
+        setAiTxt(reportText);
 
-    console.log("Calling /api/capture with lead:", lead, "fd exists:", !!fd);
-    fetch("/api/capture", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        lead: lead || {},
-        formData: fd,
-        aiReport: reportText,
-      }),
-    }).then(r => console.log("/api/capture status:", r.status))
-      .catch(e => console.log("/api/capture error:", e.message));
+        fetch("/api/capture", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ lead: lead || {}, formData: fd, aiReport: reportText }),
+        }).then(r => console.log("/api/capture status:", r.status))
+          .catch(e => console.log("/api/capture error:", e.message));
 
-  } catch (err) {
-    console.log("analyze error:", err.message);
-    const reportText = fallback();
-    setAiTxt(reportText);
-
-    fetch("/api/capture", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        lead: lead || {},
-        formData: fd,
-        aiReport: reportText,
-      }),
-    }).catch(() => {});
-
-  } finally {
-    setAiLoad(false);
-  }
-})();                // ← async block ends here
-}, []);              // ← useEffect ends here
+      } catch (err) {
+        const reportText = fallback();
+        setAiTxt(reportText);
+        fetch("/api/capture", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ lead: lead || {}, formData: fd, aiReport: reportText }),
+        }).catch(() => {});
+      } finally {
+        setAiLoad(false);
+      }
+    })();
+  }, []);
 
   const fallback = () => {
     const followUpStr = m.followUpArr.includes("none") || m.followUpArr.length === 0
@@ -688,124 +947,176 @@ Write 4 punchy paragraphs: (1) Biggest bottleneck + its rupee impact. (2) Why le
   const date = new Date().toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" });
 
   return (
-    <div style={{ maxWidth: 760, margin: "0 auto", padding: "84px 20px 80px" }}>
+    <div style={{ maxWidth: 800, margin: "0 auto", padding: "84px 20px 100px" }}>
+
+      {/* ── Report Header ── */}
       <div className="anim" style={{ marginBottom: 32 }}>
-        <div className="slabel">EnrollmentX AI Audit Report · {date}</div>
-        <h1 style={{ fontSize: 28, fontWeight: 700, letterSpacing: "-0.03em", marginBottom: 8 }}>Your Agency Audit Is Ready</h1>
-        <p style={{ color: "#6b6f88", fontSize: 15 }}>
-          Based on <strong style={{ color: "#8b8fa8" }}>{m.leads} monthly leads</strong> · Revenue per student: <strong style={{ color: "#8b8fa8" }}>{inr(m.rps)}</strong>
+        {/* Confidential banner */}
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
+          <div className="slabel" style={{ marginBottom: 0 }}>Fiscal Year 2026 · Agency Revenue Leakage Diagnosis</div>
+          <div style={{ display: "flex", alignItems: "center", gap: 5, background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 3, padding: "3px 10px" }}>
+            <svg width="10" height="12" viewBox="0 0 10 12" fill="none"><rect x="1" y="5" width="8" height="6" rx="1.5" stroke="var(--muted)" strokeWidth="1.3"/><path d="M3 5V3.5a2 2 0 014 0V5" stroke="var(--muted)" strokeWidth="1.3" strokeLinecap="round"/></svg>
+            <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--muted)" }}>Confidential Analysis</span>
+          </div>
+        </div>
+        <h1 className="serif" style={{ fontSize: "clamp(26px, 4vw, 38px)", fontWeight: 400, fontStyle: "italic", marginBottom: 10, color: "var(--navy)", lineHeight: 1.15 }}>
+          Your Agency Audit Is Ready
+        </h1>
+        <p style={{ color: "var(--sub)", fontSize: 15, lineHeight: 1.7 }}>
+          Based on <strong style={{ color: "var(--text)", fontWeight: 600 }}>{m.leads} monthly leads</strong> · Revenue per student: <strong style={{ color: "var(--text)", fontWeight: 600 }}>{inr(m.rps)}</strong> · Generated {date}
         </p>
       </div>
 
-      <div className="card anim d1" style={{ display: "flex", gap: 24, alignItems: "center", marginBottom: 14, flexWrap: "wrap" }}>
-        <Gauge score={m.score} />
-        <div style={{ flex: 1, minWidth: 220 }}>
-          <div className="slabel">AI Efficiency Score</div>
-          <h2 style={{ fontSize: 18, fontWeight: 700, letterSpacing: "-0.02em", marginBottom: 10 }}>
-            {m.score < 42 ? "Critical inefficiencies — urgent action required" : m.score < 68 ? "Several revenue leaks found — moderate risk" : "Good foundation, but revenue gaps remain"}
+      {/* ── Score + Risk Meter ── */}
+      <div className="card anim d1" style={{ display: "flex", gap: 32, alignItems: "flex-start", marginBottom: 14, flexWrap: "wrap", borderTop: "3px solid var(--navy)" }}>
+        <RiskMeter score={m.score} />
+        <div style={{ flex: 1, minWidth: 220, borderLeft: "1px solid var(--border2)", paddingLeft: 28 }}>
+          <div className="slabel" style={{ marginBottom: 10 }}>AI Efficiency Diagnosis</div>
+          <h2 className="serif" style={{ fontSize: 20, fontWeight: 400, fontStyle: "italic", marginBottom: 12, color: "var(--navy)", lineHeight: 1.3 }}>
+            {m.score < 42
+              ? "Critical inefficiencies — urgent action required"
+              : m.score < 68
+                ? "Several revenue leaks found — moderate risk"
+                : "Good foundation, but revenue gaps remain"}
           </h2>
-          <p style={{ fontSize: 14, color: "#6b6f88", lineHeight: 1.75 }}>
-            Top-performing agencies score <strong style={{ color: "#e8eaf0" }}>75 or above</strong>.
-            Your score of <strong style={{ color: m.score < 42 ? "#ef4444" : m.score < 68 ? "#f59e0b" : "#10b981" }}>{m.score}/100</strong> indicates
-            {m.score < 42 ? " multiple compounding problems actively reducing your revenue every day."
-              : m.score < 68 ? " clear gaps in conversion, follow-up, and operations limiting your growth."
+          <p style={{ fontSize: 14, color: "var(--sub)", lineHeight: 1.8 }}>
+            Top-performing agencies score <strong style={{ color: "var(--text)" }}>75 or above</strong>.
+            Your score of <strong style={{ color: m.score < 42 ? "var(--red)" : m.score < 68 ? "var(--gold)" : "var(--teal)" }}>{m.score}/100</strong> indicates
+            {m.score < 42
+              ? " multiple compounding problems actively reducing your revenue every day."
+              : m.score < 68
+                ? " clear gaps in conversion, follow-up, and operations limiting your growth."
                 : " solid operations, with specific gaps holding back full potential."}
           </p>
         </div>
       </div>
 
+      {/* ── Financial Impact ── */}
       <div style={{ marginBottom: 14 }}>
-        <div className="slabel">What You're Losing — Financial Impact</div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(155px,1fr))", gap: 10 }}>
-          <Stat label="Monthly Revenue Loss"   value={inr(m.mLoss)}        sub={`${m.lost} unconverted leads × ${inr(m.rps)}`}                                                      vc="#ef4444" />
-          <Stat label="Annual Revenue at Risk" value={inr(m.aLoss)}        sub="Projected over 12 months if nothing changes"                                                          vc="#ef4444" />
-          <Stat label="Response Time Penalty"  value={m.penalty ? inr(m.rtPenMoney) : "None"} sub={m.penalty ? `${m.rt}min response → 30% conversion loss` : `${m.rt}min — within safe range`} vc={m.penalty ? "#f59e0b" : "#10b981"} />
-          <Stat label="Ad Budget Wasted"       value={inr(m.adWasted)}     sub="Spent on leads that don't convert each month"                                                         vc="#f59e0b" />
+        <div className="slabel" style={{ marginBottom: 12 }}>What You're Losing — Financial Impact</div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(160px,1fr))", gap: 10 }}>
+          <Stat label="Monthly Revenue Loss"   value={inr(m.mLoss)}  sub={`${m.lost} unconverted leads × ${inr(m.rps)}`}         vc="var(--red)" />
+          <Stat label="Annual Revenue at Risk" value={inr(m.aLoss)}  sub="Projected over 12 months if nothing changes"             vc="var(--red)" />
+          <Stat label="Response Time Penalty"  value={m.penalty ? inr(m.rtPenMoney) : "None"}
+            sub={m.penalty ? `${m.rt}min response → 30% conversion loss` : `${m.rt}min — within safe range`}
+            vc={m.penalty ? "var(--gold)" : "var(--teal)"} />
+          <Stat label="Ad Budget Wasted"       value={inr(m.adWasted)} sub="Spent on leads that don't convert each month"          vc="var(--gold)" />
         </div>
       </div>
 
+      {/* ── Operational Efficiency ── */}
       <div className="card anim d2" style={{ marginBottom: 14 }}>
-        <div className="slabel">Time & Operational Efficiency</div>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20, marginBottom: 24 }}>
-          <div>
-            <div style={{ fontSize: 12, color: "#4a4d66", marginBottom: 5 }}>Counselor hours wasted per week</div>
-            <div className="mono" style={{ fontSize: 26, color: "#f59e0b", fontWeight: 500 }}>{m.wWaste} hrs</div>
-            <div style={{ fontSize: 12, color: "#3a3d55", marginTop: 3 }}>Across {m.counsel} counselor{m.counsel > 1 ? "s" : ""}</div>
+        <div className="slabel" style={{ marginBottom: 18 }}>Time & Operational Efficiency</div>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24, marginBottom: 28 }}>
+          <div style={{ borderBottom: "1px solid var(--border2)", paddingBottom: 20 }}>
+            <div style={{ fontSize: 12, color: "var(--muted)", marginBottom: 6, fontWeight: 600, letterSpacing: "0.04em" }}>COUNSELOR HOURS WASTED / WEEK</div>
+            <div className="mono" style={{ fontSize: 32, color: "var(--gold)", fontWeight: 600 }}>{m.wWaste} <span style={{ fontSize: 16, fontWeight: 400 }}>hrs</span></div>
+            <div style={{ fontSize: 12, color: "var(--muted)", marginTop: 4 }}>Across {m.counsel} counselor{m.counsel > 1 ? "s" : ""}</div>
           </div>
-          <div>
-            <div style={{ fontSize: 12, color: "#4a4d66", marginBottom: 5 }}>Monthly cost of manual inefficiency</div>
-            <div className="mono" style={{ fontSize: 26, color: "#ef4444", fontWeight: 500 }}>{inr(m.mWasteCost)}</div>
-            <div style={{ fontSize: 12, color: "#3a3d55", marginTop: 3 }}>At ₹200/hour labour cost</div>
+          <div style={{ borderBottom: "1px solid var(--border2)", paddingBottom: 20 }}>
+            <div style={{ fontSize: 12, color: "var(--muted)", marginBottom: 6, fontWeight: 600, letterSpacing: "0.04em" }}>MONTHLY COST OF INEFFICIENCY</div>
+            <div className="mono" style={{ fontSize: 32, color: "var(--red)", fontWeight: 600 }}>{inr(m.mWasteCost)}</div>
+            <div style={{ fontSize: 12, color: "var(--muted)", marginTop: 4 }}>At ₹200/hour labour cost</div>
           </div>
         </div>
-        <Bar label="Conversion rate vs. 15% benchmark" val={`${m.effConv}% / 15%`} pct={(m.effConv / 15) * 100} color={m.effConv < 8 ? "#ef4444" : "#f59e0b"}
+
+        <Bar label="Conversion rate vs. 15% benchmark"
+          val={`${m.effConv}% / 15%`}
+          pct={(m.effConv / 15) * 100}
+          color={m.effConv < 8 ? "var(--red)" : "var(--gold)"}
           note={`You are ${(15 - m.effConv).toFixed(1)}% below benchmark — that gap equals ${m.lost} missed enrollments per month`} />
-        <Bar label="Proportion of work that is manual / repetitive" val={`${m.manual}%`} pct={m.manual} color={m.manual > 60 ? "#ef4444" : m.manual > 30 ? "#f59e0b" : "#10b981"}
-          note={m.manual > 50 ? "High manual load is consuming time that should be spent on lead conversion." : "Some manual work exists — targeted automation can clear this."} />
-        <Bar label="Lead response speed (target: under 10 minutes)" val={`${m.rt} min`} pct={Math.min(100, (10 / Math.max(m.rt, 1)) * 100)} color={m.rt <= 10 ? "#10b981" : "#ef4444"}
+        <Bar label="Proportion of work that is manual / repetitive"
+          val={`${m.manual}%`}
+          pct={m.manual}
+          color={m.manual > 60 ? "var(--red)" : m.manual > 30 ? "var(--gold)" : "var(--teal)"}
+          note={m.manual > 50 ? "High manual load consuming time that should be spent on lead conversion." : "Some manual work exists — targeted automation can clear this."} />
+        <Bar label="Lead response speed (target: under 10 minutes)"
+          val={`${m.rt} min`}
+          pct={Math.min(100, (10 / Math.max(m.rt, 1)) * 100)}
+          color={m.rt <= 10 ? "var(--teal)" : "var(--red)"}
           note={m.rt > 10 ? `${m.rt - 10} minutes above the safe threshold. Actively reducing your conversion from ${m.conv}% to ${m.effConv}%.` : "Your response time is optimal."} />
       </div>
 
-      <div className="card-blue anim d3" style={{ marginBottom: 14 }}>
-        <div style={{ display: "flex", gap: 12, alignItems: "center", marginBottom: 14 }}>
-          <div style={{ width: 34, height: 34, borderRadius: 9, background: "rgba(94,96,255,0.14)", border: "1px solid rgba(94,96,255,0.28)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 17, flexShrink: 0 }}>◈</div>
+      {/* ── AI Analysis ── */}
+      <div className="card-ruled anim d3" style={{ marginBottom: 14 }}>
+        <div style={{ display: "flex", gap: 12, alignItems: "center", marginBottom: 16 }}>
+          <div style={{ width: 36, height: 36, borderRadius: 5, background: "var(--navy)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="#F2F0EB" strokeWidth="1.3"/><path d="M8 5v4M8 11v.5" stroke="#F2F0EB" strokeWidth="1.5" strokeLinecap="round"/></svg>
+          </div>
           <div>
-            <div style={{ fontWeight: 600, fontSize: 15, color: "#e8eaf0" }}>AI Bottleneck Analysis</div>
-            <div style={{ fontSize: 12, color: "#6b6f88" }}>Powered by EnrollmentX AI · Generated from your specific data</div>
+            <div style={{ fontWeight: 700, fontSize: 14, color: "var(--navy)" }}>AI Bottleneck Analysis</div>
+            <div style={{ fontSize: 12, color: "var(--muted)" }}>Powered by EnrollmentX AI · Generated from your specific data</div>
           </div>
         </div>
         {aiLoad ? (
-          <div style={{ display: "flex", alignItems: "center", gap: 12, color: "#6b6f88", fontSize: 14, padding: "8px 0" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12, color: "var(--sub)", fontSize: 14, padding: "8px 0" }}>
             <div className="spinner" />
             <span>Analysing your data with AI — takes a few seconds…</span>
           </div>
         ) : (
-          <div style={{ fontSize: 15, color: "#8b8fa8", lineHeight: 1.85, whiteSpace: "pre-wrap" }}>{aiTxt}</div>
+          <div style={{ fontSize: 15, color: "var(--sub)", lineHeight: 1.9, whiteSpace: "pre-wrap", fontStyle: "normal" }}>{aiTxt}</div>
         )}
       </div>
 
+      {/* ── Opportunities ── */}
       <div style={{ marginBottom: 14 }}>
-        <div className="slabel">AI Automation Opportunities — Ranked by ROI Impact</div>
+        <div className="slabel" style={{ marginBottom: 12 }}>AI Automation Opportunities — Ranked by ROI Impact</div>
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           {opps.map((o, i) => <OppCard key={i} {...o} idx={i} />)}
         </div>
       </div>
 
-      <div className="card-blue anim" style={{ marginBottom: 24 }}>
-        <div className="slabel">Your Growth Potential</div>
-        <div style={{ display: "flex", alignItems: "baseline", gap: 12, flexWrap: "wrap", marginBottom: 14 }}>
-          <div className="mono" style={{ fontSize: 40, color: "#10b981", fontWeight: 700 }}>+{Math.min(m.growthPct, 150)}%</div>
-          <div style={{ fontSize: 16, color: "#6b6f88" }}>potential revenue increase</div>
+      {/* ── Growth Potential ── */}
+      <div className="card-blue anim" style={{ marginBottom: 20 }}>
+        <div className="slabel" style={{ marginBottom: 14 }}>Your Growth Potential</div>
+        <div style={{ display: "flex", alignItems: "baseline", gap: 14, flexWrap: "wrap", marginBottom: 14 }}>
+          <div className="mono serif" style={{ fontSize: 52, color: "var(--teal)", fontWeight: 400, fontStyle: "italic", lineHeight: 1 }}>+{Math.min(m.growthPct, 150)}%</div>
+          <div style={{ fontSize: 16, color: "var(--sub)" }}>potential revenue increase</div>
         </div>
-        <p style={{ fontSize: 15, color: "#8b8fa8", lineHeight: 1.8 }}>
+        <p style={{ fontSize: 15, color: "var(--sub)", lineHeight: 1.85 }}>
           If your agency reaches the 15% conversion benchmark from your current {m.effConv}%, you would enroll{" "}
-          <strong style={{ color: "#e8eaf0" }}>{m.lost} additional students per month</strong>. At {inr(m.rps)} per student, that is{" "}
-          <strong style={{ color: "#10b981" }}>{inr(m.mLoss)}/month</strong> in recovered revenue, or{" "}
-          <strong style={{ color: "#10b981" }}>{inr(m.aLoss)} per year</strong> — without spending a single extra rupee on advertising.
+          <strong style={{ color: "var(--text)" }}>{m.lost} additional students per month</strong>. At {inr(m.rps)} per student, that is{" "}
+          <strong style={{ color: "var(--teal)" }}>{inr(m.mLoss)}/month</strong> in recovered revenue, or{" "}
+          <strong style={{ color: "var(--teal)" }}>{inr(m.aLoss)} per year</strong> — without spending a single extra rupee on advertising.
         </p>
       </div>
 
-      <div style={{ background: "#0f1017", border: "1px solid #1e2030", borderRadius: 18, padding: "48px 32px", textAlign: "center" }}>
-        <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "#5E60FF", marginBottom: 16 }}>Ready to fix this?</div>
-        <h2 style={{ fontSize: 26, fontWeight: 700, letterSpacing: "-0.025em", marginBottom: 12 }}>
-          Recover {inr(m.mLoss)}/month<br />with AI — in 30 days
-        </h2>
-        <p style={{ color: "#6b6f88", fontSize: 15, maxWidth: 400, margin: "0 auto 36px", lineHeight: 1.75 }}>
-          Our team will build and deploy a custom AI system for your agency — lead chatbot, WhatsApp automation, CRM workflows — all tailored to how you work.
-        </p>
-        <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
-          <button className="btn bcta" onClick={() => window.open("https://calendly.com/charanrathod-inf/30min", "_blank")}>
-            Book a Free Strategy Call →
-          </button>
-          <button className="btn bo" onClick={onRestart}>Run Another Audit</button>
+      {/* ── CTA ── */}
+      <div className="card-ink" style={{ padding: "52px 40px", textAlign: "center" }}>
+        <div style={{ position: "relative", zIndex: 1 }}>
+          <div className="slabel" style={{ color: "rgba(255,255,255,0.35)", marginBottom: 18 }}>Ready to fix this?</div>
+          <h2 className="serif" style={{ fontSize: "clamp(24px, 3.5vw, 36px)", fontWeight: 400, fontStyle: "italic", color: "#fff", marginBottom: 14, lineHeight: 1.2 }}>
+            Recover {inr(m.mLoss)}/month<br />with AI — in 30 days
+          </h2>
+          <p style={{ color: "rgba(255,255,255,0.55)", fontSize: 15, maxWidth: 420, margin: "0 auto 10px", lineHeight: 1.8 }}>
+            Our team will build and deploy a custom AI system for your agency — lead chatbot, WhatsApp automation, CRM workflows — all tailored to how you work.
+          </p>
+          <p style={{ color: "rgba(255,255,255,0.35)", fontSize: 13, marginBottom: 36 }}>
+            Monthly leakage identified: <span style={{ color: "#EF4444", fontWeight: 600, fontFamily: "monospace" }}>{inr(m.mLoss)}</span>
+          </p>
+          <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
+            <button className="btn" style={{
+              background: "#fff", color: "var(--navy)", fontSize: 15, padding: "15px 36px",
+              fontWeight: 700, borderRadius: 5, display: "flex", alignItems: "center", gap: 10,
+              boxShadow: "0 4px 20px rgba(0,0,0,0.3)",
+            }} onClick={() => window.open("https://calendly.com/charanrathod-inf/30min", "_blank")}>
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="11" rx="2" stroke="currentColor" strokeWidth="1.4"/><path d="M5 1v3M11 1v3M2 7h12" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg>
+              Book a Free Strategy Call →
+            </button>
+            <button className="btn" style={{ background: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.65)", border: "1px solid rgba(255,255,255,0.12)", fontSize: 14 }} onClick={onRestart}>
+              Run Another Audit
+            </button>
+          </div>
+          <p style={{ fontSize: 12, color: "rgba(255,255,255,0.25)", marginTop: 22, letterSpacing: "0.04em" }}>
+            No commitment · 30-Minute Confidential Call with EnrollmentX Certified Study Abroad Specialists
+          </p>
         </div>
-        <p style={{ fontSize: 12, color: "#2e3050", marginTop: 20 }}>No commitment · 30-minute call · EnrollmentX specialists</p>
       </div>
     </div>
   );
 }
 
-// ── LeadCapture (unchanged) ───────────────────────────────────────────────────
+// ── Lead Capture ──────────────────────────────────────────────────────────────
 function LeadCapture({ formData, onSubmit }) {
   const [mode, setMode] = useState("choose");
   const [lead, setLead] = useState({ name: "", email: "", phone: "", agency: "" });
@@ -825,7 +1136,7 @@ function LeadCapture({ formData, onSubmit }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ lead: ld, formData }),
       });
-    } catch (e) { }
+    } catch (e) {}
     onSubmit(ld);
   };
 
@@ -852,64 +1163,74 @@ function LeadCapture({ formData, onSubmit }) {
     setSubmitting(false);
   };
 
-  if (mode === "choose") return (
-    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "84px 20px 60px", position: "relative", overflow: "hidden", background: "#08090e" }}>
-      <div style={{ position: "absolute", top: "10%", left: "50%", transform: "translateX(-50%)", width: 800, height: 400, background: "radial-gradient(ellipse,rgba(94,96,255,0.07) 0%,transparent 70%)", pointerEvents: "none" }} />
+  const scoreCol = teaserScore.score < 42 ? "var(--red)" : "var(--gold)";
 
+  if (mode === "choose") return (
+    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "84px 20px 60px", background: "var(--bg)", position: "relative" }}>
+      <div style={{ position: "fixed", inset: 0, backgroundImage: "var(--grain)", pointerEvents: "none", opacity: 0.3 }} />
       <div style={{ width: "100%", maxWidth: 520, position: "relative" }}>
-        <div className="anim" style={{ position: "relative", marginBottom: 20, borderRadius: 16, overflow: "hidden", border: "1px solid rgba(94,96,255,0.2)" }}>
-          <div style={{ filter: "blur(6px)", pointerEvents: "none", userSelect: "none", background: "#0f1017", padding: "20px 24px", display: "flex", gap: 20, alignItems: "center", flexWrap: "wrap" }}>
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
-              <svg width={80} height={80} viewBox="0 0 128 128">
-                <circle cx={64} cy={64} r={52} fill="none" stroke="#1e2030" strokeWidth={10} />
-                <circle cx={64} cy={64} r={52} fill="none" stroke={teaserScore.score < 42 ? "#ef4444" : "#f59e0b"} strokeWidth={10}
-                  strokeDasharray={2 * Math.PI * 52} strokeDashoffset={2 * Math.PI * 52 - (teaserScore.score / 100) * 2 * Math.PI * 52}
-                  strokeLinecap="round" transform="rotate(-90 64 64)" />
-                <text x={64} y={60} textAnchor="middle" fill="#e8eaf0" fontSize={28} fontWeight={700} fontFamily="monospace">{teaserScore.score}</text>
-                <text x={64} y={76} textAnchor="middle" fill="#6b6f88" fontSize={13}>/100</text>
-              </svg>
+
+        {/* Blurred teaser */}
+        <div className="anim" style={{ position: "relative", marginBottom: 16, borderRadius: 6, overflow: "hidden", border: "1px solid var(--border)", boxShadow: "var(--shadow-md)" }}>
+          <div style={{ filter: "blur(5px)", pointerEvents: "none", userSelect: "none", background: "var(--surface)", padding: "22px 26px", display: "flex", gap: 24, alignItems: "center", flexWrap: "wrap" }}>
+            {/* Mini score */}
+            <div style={{ textAlign: "center" }}>
+              <div style={{ fontSize: 48, fontFamily: "var(--serif)", fontStyle: "italic", fontWeight: 400, color: "var(--navy)", lineHeight: 1 }}>{teaserScore.score}</div>
+              <div style={{ fontSize: 11, color: "var(--muted)", fontWeight: 600, letterSpacing: "0.08em" }}>SCORE</div>
             </div>
-            <div style={{ flex: 1, minWidth: 160 }}>
-              <div style={{ fontSize: 12, color: "#4a4d66", marginBottom: 4, textTransform: "uppercase", letterSpacing: "0.08em" }}>Monthly Revenue Loss</div>
-              <div style={{ fontSize: 28, fontWeight: 700, color: "#ef4444", fontFamily: "monospace" }}>{inr(teaserScore.mLoss)}</div>
-              <div style={{ fontSize: 12, color: "#4a4d66", marginTop: 4 }}>{teaserScore.lost} leads slipping away each month</div>
+            <div style={{ flex: 1, minWidth: 150 }}>
+              <div className="slabel" style={{ marginBottom: 4 }}>Monthly Revenue Loss</div>
+              <div className="mono" style={{ fontSize: 28, fontWeight: 600, color: scoreCol }}>{inr(teaserScore.mLoss)}</div>
+              <div style={{ fontSize: 12, color: "var(--muted)", marginTop: 4 }}>{teaserScore.lost} leads slipping away each month</div>
             </div>
-            <div style={{ flex: 1, minWidth: 160 }}>
-              <div style={{ fontSize: 12, color: "#4a4d66", marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.08em" }}>Top Issues Found</div>
-              {["Response time penalty", "Conversion gap", "Manual work waste"].map((i, idx) => (
-                <div key={idx} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-                  <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#ef4444", flexShrink: 0 }} />
-                  <div style={{ fontSize: 13, color: "#6b6f88" }}>{i}</div>
+            <div style={{ flex: 1, minWidth: 140 }}>
+              <div className="slabel" style={{ marginBottom: 8 }}>Top Issues Found</div>
+              {["Response time penalty", "Conversion gap", "Manual work waste"].map((item, idx) => (
+                <div key={idx} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 7 }}>
+                  <div style={{ width: 5, height: 5, borderRadius: "50%", background: "var(--red)", flexShrink: 0 }} />
+                  <div style={{ fontSize: 13, color: "var(--sub)" }}>{item}</div>
                 </div>
               ))}
             </div>
           </div>
-
-          <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", background: "rgba(8,9,14,0.72)", backdropFilter: "blur(1px)", gap: 10 }}>
-            <div style={{ width: 40, height: 40, borderRadius: 12, background: "rgba(94,96,255,0.15)", border: "1px solid rgba(94,96,255,0.3)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>🔒</div>
-            <div style={{ fontSize: 14, fontWeight: 600, color: "#e8eaf0" }}>Your report is ready</div>
-            <div style={{ fontSize: 13, color: "#6b6f88" }}>Sign in to unlock your full audit</div>
+          {/* Lock overlay */}
+          <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", background: "rgba(242,240,235,0.78)", backdropFilter: "blur(2px)", gap: 10 }}>
+            <div style={{ width: 42, height: 42, borderRadius: 6, background: "var(--surface)", border: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "var(--shadow-md)" }}>
+              <svg width="18" height="20" viewBox="0 0 18 20" fill="none"><rect x="2" y="9" width="14" height="10" rx="2" stroke="var(--navy)" strokeWidth="1.5"/><path d="M5 9V6a4 4 0 018 0v3" stroke="var(--navy)" strokeWidth="1.5" strokeLinecap="round"/></svg>
+            </div>
+            <div style={{ fontSize: 14, fontWeight: 700, color: "var(--navy)" }}>Your report is ready</div>
+            <div style={{ fontSize: 13, color: "var(--sub)" }}>Sign in to unlock your full audit</div>
           </div>
         </div>
 
-        <div className="anim d1" style={{ background: "rgba(239,68,68,0.06)", border: "1px solid rgba(239,68,68,0.15)", borderRadius: 10, padding: "10px 16px", marginBottom: 20, display: "flex", alignItems: "center", gap: 10 }}>
-          <span style={{ fontSize: 16 }}>⚠️</span>
-          <span style={{ fontSize: 13, color: "#f87171", lineHeight: 1.5 }}>
+        {/* Urgency strip */}
+        <div className="anim d1" style={{ background: "var(--red-dim)", border: "1px solid rgba(153,27,27,0.15)", borderRadius: 5, padding: "11px 16px", marginBottom: 16, display: "flex", alignItems: "center", gap: 10 }}>
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1L1.5 13h13L8 1z" stroke="var(--red)" strokeWidth="1.4" strokeLinejoin="round"/><path d="M8 6v3.5M8 11.5v.5" stroke="var(--red)" strokeWidth="1.4" strokeLinecap="round"/></svg>
+          <span style={{ fontSize: 13, color: "var(--red)", lineHeight: 1.5 }}>
             Your agency is losing <strong>{inr(teaserScore.mLoss)}/month</strong> right now. Sign in to see the full breakdown and fix plan.
           </span>
         </div>
 
-        <div className="card anim d2" style={{ padding: "28px" }}>
-          <div style={{ textAlign: "center", marginBottom: 24 }}>
-            <h2 style={{ fontSize: 20, fontWeight: 700, letterSpacing: "-0.025em", marginBottom: 6 }}>Unlock your free audit report</h2>
-            <p style={{ fontSize: 13, color: "#6b6f88", lineHeight: 1.65 }}>Takes 5 seconds · No credit card · 100% free</p>
+        {/* Auth card */}
+        <div className="card anim d2" style={{ padding: "30px", borderTop: "3px solid var(--navy)" }}>
+          <div style={{ textAlign: "center", marginBottom: 26 }}>
+            <h2 className="serif" style={{ fontSize: 22, fontWeight: 400, fontStyle: "italic", marginBottom: 6, color: "var(--navy)" }}>Unlock your free audit report</h2>
+            <p style={{ fontSize: 13, color: "var(--sub)" }}>Takes 5 seconds · No credit card · 100% free</p>
           </div>
 
+          {/* Google CTA — dominant */}
           <button
             onClick={handleGoogle}
-            style={{ width: "100%", background: "#fff", color: "#1f2937", border: "none", borderRadius: 10, padding: "14px 20px", fontSize: 15, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", justifyContent: "center", gap: 12, transition: "all .18s", marginBottom: 12, boxShadow: "0 2px 12px rgba(0,0,0,0.3)" }}
-            onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-1px)"; e.currentTarget.style.boxShadow = "0 6px 20px rgba(0,0,0,0.4)"; }}
-            onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 2px 12px rgba(0,0,0,0.3)"; }}
+            style={{
+              width: "100%", background: "var(--navy)", color: "#fff",
+              border: "none", borderRadius: 5, padding: "15px 20px",
+              fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: "var(--sans)",
+              display: "flex", alignItems: "center", justifyContent: "center", gap: 12,
+              transition: "all .15s", marginBottom: 12, position: "relative", overflow: "hidden",
+              boxShadow: "0 3px 14px rgba(14,23,40,0.25)",
+            }}
+            onMouseEnter={e => { e.currentTarget.style.background = "var(--navy2)"; e.currentTarget.style.transform = "translateY(-1px)"; }}
+            onMouseLeave={e => { e.currentTarget.style.background = "var(--navy)"; e.currentTarget.style.transform = "translateY(0)"; }}
           >
             <svg width="18" height="18" viewBox="0 0 24 24">
               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -921,18 +1242,18 @@ function LeadCapture({ formData, onSubmit }) {
           </button>
 
           <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
-            <div style={{ flex: 1, height: "1px", background: "#1e2030" }} />
-            <span style={{ fontSize: 12, color: "#3a3d55", fontWeight: 500 }}>or</span>
-            <div style={{ flex: 1, height: "1px", background: "#1e2030" }} />
+            <div style={{ flex: 1, height: "1px", background: "var(--border2)" }} />
+            <span style={{ fontSize: 11, color: "var(--muted)", fontWeight: 600, letterSpacing: "0.06em" }}>OR</span>
+            <div style={{ flex: 1, height: "1px", background: "var(--border2)" }} />
           </div>
 
-          <button className="btn bo" style={{ width: "100%", fontSize: 13, padding: "11px 0", color: "#4a4d66" }} onClick={() => setMode("manual")}>
+          <button className="btn bo" style={{ width: "100%", fontSize: 13, padding: "11px 0", color: "var(--muted)" }} onClick={() => setMode("manual")}>
             Enter details manually
           </button>
 
           <div style={{ display: "flex", justifyContent: "center", gap: 20, marginTop: 18, flexWrap: "wrap" }}>
             {["🔒 No spam", "✓ Free forever", "📧 Report sent to email"].map((t, i) => (
-              <span key={i} style={{ fontSize: 11, color: "#3a3d55" }}>{t}</span>
+              <span key={i} style={{ fontSize: 11, color: "var(--muted)", fontWeight: 500 }}>{t}</span>
             ))}
           </div>
         </div>
@@ -940,37 +1261,38 @@ function LeadCapture({ formData, onSubmit }) {
     </div>
   );
 
+  // Manual form
   return (
     <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "84px 20px 60px" }}>
       <div style={{ width: "100%", maxWidth: 460 }}>
         <button className="btn bo" style={{ fontSize: 13, padding: "7px 14px", marginBottom: 20 }} onClick={() => setMode("choose")}>← Back</button>
-        <div className="card anim" style={{ padding: "28px" }}>
+        <div className="card anim" style={{ padding: "30px", borderTop: "3px solid var(--navy)" }}>
           <div style={{ marginBottom: 24 }}>
-            <h2 style={{ fontSize: 21, fontWeight: 700, letterSpacing: "-0.02em", marginBottom: 6 }}>Your details</h2>
-            <p style={{ fontSize: 14, color: "#6b6f88" }}>We'll send your full audit report to your email.</p>
+            <h2 className="serif" style={{ fontSize: 22, fontWeight: 400, fontStyle: "italic", marginBottom: 6, color: "var(--navy)" }}>Your details</h2>
+            <p style={{ fontSize: 14, color: "var(--sub)" }}>We'll send your full audit report to your email.</p>
           </div>
           <div className="field">
-            <label className="fl">Full Name <span style={{ color: "#ef4444", fontSize: 12 }}>*</span></label>
-            <input type="text" placeholder="e.g. Rahul Sharma" value={lead.name} onChange={e => upd("name", e.target.value)} style={{ borderColor: errors.name ? "#ef4444" : undefined }} />
-            {errors.name && <div style={{ fontSize: 12, color: "#ef4444", marginTop: 4 }}>{errors.name}</div>}
+            <label className="fl">Full Name <span style={{ color: "var(--red)", fontSize: 12 }}>*</span></label>
+            <input type="text" placeholder="e.g. Rahul Sharma" value={lead.name} onChange={e => upd("name", e.target.value)} style={{ borderColor: errors.name ? "var(--red)" : undefined }} />
+            {errors.name && <div style={{ fontSize: 12, color: "var(--red)", marginTop: 4 }}>{errors.name}</div>}
           </div>
           <div className="field">
-            <label className="fl">Work Email <span style={{ color: "#ef4444", fontSize: 12 }}>*</span></label>
-            <input type="text" placeholder="e.g. rahul@agency.com" value={lead.email} onChange={e => upd("email", e.target.value)} style={{ borderColor: errors.email ? "#ef4444" : undefined }} />
-            {errors.email && <div style={{ fontSize: 12, color: "#ef4444", marginTop: 4 }}>{errors.email}</div>}
+            <label className="fl">Work Email <span style={{ color: "var(--red)", fontSize: 12 }}>*</span></label>
+            <input type="text" placeholder="e.g. rahul@agency.com" value={lead.email} onChange={e => upd("email", e.target.value)} style={{ borderColor: errors.email ? "var(--red)" : undefined }} />
+            {errors.email && <div style={{ fontSize: 12, color: "var(--red)", marginTop: 4 }}>{errors.email}</div>}
           </div>
           <div className="field">
-            <label className="fl">Agency Name <span style={{ color: "#4a4d66", fontWeight: 400, fontSize: 12 }}>— optional</span></label>
+            <label className="fl">Agency Name <span style={{ color: "var(--muted)", fontWeight: 400, fontSize: 12 }}>— optional</span></label>
             <input type="text" placeholder="e.g. Global Study Consultants" value={lead.agency} onChange={e => upd("agency", e.target.value)} />
           </div>
           <div className="field">
-            <label className="fl">Phone Number <span style={{ color: "#4a4d66", fontWeight: 400, fontSize: 12 }}>— optional</span></label>
+            <label className="fl">Phone Number <span style={{ color: "var(--muted)", fontWeight: 400, fontSize: 12 }}>— optional</span></label>
             <input type="text" placeholder="e.g. +91 98765 43210" value={lead.phone} onChange={e => upd("phone", e.target.value)} />
           </div>
           <button className="btn bp" style={{ width: "100%", fontSize: 15, padding: "13px 0", opacity: submitting ? 0.7 : 1, marginTop: 4 }} onClick={handleManual} disabled={submitting}>
             {submitting ? "Saving…" : "View My Audit Report →"}
           </button>
-          <p style={{ fontSize: 11, color: "#2e3050", textAlign: "center", marginTop: 14, lineHeight: 1.6 }}>
+          <p style={{ fontSize: 11, color: "var(--muted)", textAlign: "center", marginTop: 14, lineHeight: 1.6 }}>
             🔒 No spam. Your details are used only to deliver your report.
           </p>
         </div>
@@ -979,7 +1301,7 @@ function LeadCapture({ formData, onSubmit }) {
   );
 }
 
-/* ── Root ── */
+// ── Root ──────────────────────────────────────────────────────────────────────
 export default function App() {
   const [screen, setScreen] = useState("landing");
   const [fd, setFd] = useState(null);
@@ -992,37 +1314,33 @@ export default function App() {
         setUser(session.user);
         const params = new URLSearchParams(window.location.search);
         if (params.get("audit") === "true") {
-  const saved = sessionStorage.getItem("audit_fd");
-  if (saved) {
-    const restoredFd = JSON.parse(saved);
-    sessionStorage.removeItem("audit_fd");
-    setFd(restoredFd);
-    const profile = {
-      name: session.user.user_metadata?.full_name || "",
-      email: session.user.email || "",
-      phone: session.user.user_metadata?.phone || "",
-      agency: "",
-    };
-    setLead(profile);
-
-    // ✅ Save Google auth user to audit_leads immediately
-    fetch("/api/capture", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ lead: profile, formData: restoredFd }),
-    }).catch(() => {});
-
-    setScreen("analyzing");
-    setTimeout(() => setScreen("report"), 5800);
-  }
-}
+          const saved = sessionStorage.getItem("audit_fd");
+          if (saved) {
+            const restoredFd = JSON.parse(saved);
+            sessionStorage.removeItem("audit_fd");
+            setFd(restoredFd);
+            const profile = {
+              name:   session.user.user_metadata?.full_name || "",
+              email:  session.user.email || "",
+              phone:  session.user.user_metadata?.phone || "",
+              agency: "",
+            };
+            setLead(profile);
+            fetch("/api/capture", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ lead: profile, formData: restoredFd }),
+            }).catch(() => {});
+            setScreen("analyzing");
+            setTimeout(() => setScreen("report"), 5800);
+          }
+        }
       }
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
     });
-
     return () => subscription.unsubscribe();
   }, []);
 
@@ -1042,4 +1360,4 @@ export default function App() {
       {screen === "report"    && <Report fd={fd} lead={lead} onRestart={restart} />}
     </>
   );
-} 
+}
